@@ -24,7 +24,7 @@ export function useProEncounters(): UseProEncountersReturn {
       const data = await fetchProEncounters(accountId)
       setState({ data, status: 'success', error: null })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido'
+      const message = err instanceof Error ? err.message : 'Unknown error'
       setState({ data: null, status: 'error', error: message })
     }
   }, [])
