@@ -14,7 +14,8 @@ vi.mock('../hooks/useProEncounters', () => ({
 describe('App', () => {
   it('renders the main heading', () => {
     render(<App />)
-    expect(screen.getByText('Dota 2 Pro Encounters')).toBeInTheDocument()
+    // h1 spans two child elements — query by role
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 
   it('renders the search form in idle state', () => {
