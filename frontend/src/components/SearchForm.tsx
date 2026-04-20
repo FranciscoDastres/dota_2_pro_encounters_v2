@@ -14,11 +14,11 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     const trimmed = value.trim()
 
     if (!trimmed) {
-      setValidationError('Ingresa tu Account ID')
+      setValidationError('Enter your Account ID')
       return
     }
     if (!/^\d+$/.test(trimmed)) {
-      setValidationError('El Account ID debe contener solo números')
+      setValidationError('Account ID must contain numbers only')
       return
     }
 
@@ -31,13 +31,13 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
       <div className="flex gap-2">
         <div className="flex-1">
           <label htmlFor="account-id" className="sr-only">
-            Account ID de Dota 2
+            Dota 2 Account ID
           </label>
           <input
             id="account-id"
             type="text"
             inputMode="numeric"
-            placeholder="Account ID (ej: 123456789)"
+            placeholder="Account ID (e.g., 123456789)"
             value={value}
             onChange={(e) => {
               setValue(e.target.value)
@@ -70,10 +70,10 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
           {loading ? (
             <span className="flex items-center gap-2">
               <span className="block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              Buscando…
+              Searching…
             </span>
           ) : (
-            'Buscar'
+            'Search'
           )}
         </button>
       </div>
