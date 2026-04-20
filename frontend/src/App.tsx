@@ -5,6 +5,7 @@ import { ErrorMessage } from './components/ErrorMessage'
 import { EmptyState } from './components/EmptyState'
 import { ProEncounterTable } from './components/ProEncounterTable'
 import { Footer } from './components/Footer'
+import { KofiWidget } from './components/KofiWidget'
 
 function App() {
   const { data, status, error, search, reset } = useProEncounters()
@@ -75,6 +76,7 @@ function App() {
       </main>
 
       <Footer />
+      <KofiWidget />
     </div>
   )
 }
