@@ -1,12 +1,22 @@
 export function LoadingSpinner() {
   return (
     <div
-      className="flex flex-col items-center justify-center py-16 gap-4"
+      className="flex flex-col items-center justify-center gap-5 py-20"
       role="status"
       aria-label="Cargando resultados"
     >
-      <div className="w-10 h-10 border-4 border-dota-border border-t-dota-gold rounded-full animate-spin" />
-      <p className="text-gray-400">Consultando OpenDota...</p>
+      {/* Outer ring */}
+      <div className="relative h-14 w-14">
+        <div className="absolute inset-0 rounded-full border-4 border-dota-border" />
+        <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-dota-gold" />
+        {/* Inner dot */}
+        <div className="absolute inset-3 rounded-full bg-dota-gold/10" />
+      </div>
+
+      <div className="text-center">
+        <p className="text-sm font-medium text-gray-300">Consultando OpenDota…</p>
+        <p className="mt-1 text-xs text-gray-600">Esto puede tomar unos segundos</p>
+      </div>
     </div>
   )
 }
