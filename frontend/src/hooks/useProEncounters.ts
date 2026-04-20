@@ -9,7 +9,7 @@ interface State {
 }
 
 interface UseProEncountersReturn extends State {
-  search: (steamId: string) => Promise<void>
+  search: (accountId: string) => Promise<void>
   reset: () => void
 }
 
@@ -18,10 +18,10 @@ const INITIAL_STATE: State = { data: null, status: 'idle', error: null }
 export function useProEncounters(): UseProEncountersReturn {
   const [state, setState] = useState<State>(INITIAL_STATE)
 
-  const search = useCallback(async (steamId: string) => {
+  const search = useCallback(async (accountId: string) => {
     setState({ data: null, status: 'loading', error: null })
     try {
-      const data = await fetchProEncounters(steamId)
+      const data = await fetchProEncounters(accountId)
       setState({ data, status: 'success', error: null })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido'
