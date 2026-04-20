@@ -50,9 +50,9 @@ describe('SearchForm', () => {
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
-  it('shows "Buscando..." while loading', () => {
+  it('shows "Buscando…" while loading', () => {
     render(<SearchForm onSearch={mockOnSearch} loading={true} />)
-    expect(screen.getByRole('button')).toHaveTextContent('Buscando...')
+    expect(screen.getByRole('button')).toHaveTextContent('Buscando…')
   })
 
   it('clears validation error when user starts typing', async () => {
