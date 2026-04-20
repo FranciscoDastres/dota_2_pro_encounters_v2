@@ -31,9 +31,9 @@ function App() {
           </h1>
 
           <p className="mx-auto mb-8 max-w-xl text-lg text-gray-400">
-            Ingresa tu{' '}
-            <strong className="font-semibold text-white">Account ID</strong> y descubre
-            si alguna vez compartiste una partida con jugadores profesionales.
+            Enter your{' '}
+            <strong className="font-semibold text-white">Account ID</strong> and discover
+            if you ever shared a match with professional Dota 2 players.
           </p>
 
           <div className="flex justify-center">
@@ -41,7 +41,7 @@ function App() {
           </div>
 
           <p className="mt-4 text-xs text-gray-600">
-            ¿No sabes tu Account ID? Búscate en{' '}
+            Don't know your Account ID? Find yourself on{' '}
             <a
               href="https://www.opendota.com"
               target="_blank"
@@ -50,7 +50,7 @@ function App() {
             >
               opendota.com
             </a>
-            , aparece en la URL de tu perfil.
+            — it appears in your profile URL.
           </p>
         </div>
       </header>
