@@ -25,9 +25,9 @@ function App() {
 
           <h1 className="mb-5 text-5xl font-bold leading-tight md:text-6xl">
             <span className="bg-gradient-to-r from-dota-gold to-dota-gold-light bg-clip-text text-transparent">
-              Dota 2
-            </span>{' '}
-            <span className="text-white">Pro Encounters</span>
+              Stomp
+            </span>
+            <span className="text-white">Tracker</span>
           </h1>
 
           <p className="mx-auto mb-8 max-w-xl text-lg text-gray-400">
