@@ -23,7 +23,7 @@ export function Footer() {
             >
               <path d="M18.5 3H6c-1.1 0-2 .9-2 2v5.71c0 3.83 2.95 7.18 6.78 7.29 3.96.12 7.22-3.06 7.22-7V5c0-.55-.45-1-1-1zm-1 7c0 2.76-2.24 5-5 5s-5-2.24-5-5V6h10v4zM4 19h16v2H4z" />
             </svg>
-            <span>Apóyame en Ko-fi</span>
+            <span>Support me on Ko-fi</span>
           </a>
         </div>
       )}
