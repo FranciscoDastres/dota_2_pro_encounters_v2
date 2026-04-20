@@ -61,7 +61,7 @@ describe('GET /api/pro-encounters/:accountId', () => {
     const res = await request(app).get('/api/pro-encounters/not-a-number')
 
     expect(res.status).toBe(400)
-    expect(res.body.error).toMatch(/inválido/i)
+    expect(res.body.error).toMatch(/invalid/i)
   })
 
   it('returns 400 when accountId mixes letters and digits', async () => {
