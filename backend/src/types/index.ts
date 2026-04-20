@@ -27,3 +27,27 @@ export interface ApiErrorResponse {
   error: string
   status: number
 }
+
+// ─── Shared match shapes ──────────────────────────────────────────────────────
+
+/**
+ * Subset of fields returned by GET /players/{account_id}/matches
+ * when filtered with included_account_id={pro_account_id}.
+ */
+export interface SharedMatch {
+  match_id: number
+  start_time: number     // Unix timestamp (seconds)
+  radiant_win: boolean
+  player_slot: number    // 0-4 = radiant, 128-132 = dire
+  hero_id: number
+  kills: number
+  deaths: number
+  assists: number
+  duration: number       // seconds
+}
+
+export interface SharedMatchesResponse {
+  account_id: number
+  pro_account_id: number
+  matches: SharedMatch[]
+}
