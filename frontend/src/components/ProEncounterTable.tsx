@@ -6,14 +6,14 @@ interface Props {
 }
 
 const HEADERS = [
-  { key: 'avatar', label: 'Avatar' },
-  { key: 'player', label: 'Jugador' },
-  { key: 'team', label: 'Equipo' },
-  { key: 'last_match', label: 'Último partido' },
-  { key: 'games', label: 'Partidas' },
-  { key: 'wins', label: 'Victorias' },
-  { key: 'winrate', label: 'Win%' },
-  { key: 'country', label: 'País' },
+  { key: 'avatar',      label: 'Avatar' },
+  { key: 'player',      label: 'Jugador' },
+  { key: 'team',        label: 'Equipo' },
+  { key: 'last_match',  label: 'Último partido' },
+  { key: 'games',       label: 'Partidas' },
+  { key: 'wins',        label: 'Victorias' },
+  { key: 'winrate',     label: 'Win%' },
+  { key: 'country',     label: 'País' },
 ] as const
 
 export function ProEncounterTable({ data }: Props) {
@@ -21,14 +21,23 @@ export function ProEncounterTable({ data }: Props) {
 
   return (
     <div>
-      <p className="mb-4 text-gray-400">
-        Se encontraron{' '}
-        <span className="text-dota-gold font-semibold">{count}</span>{' '}
-        {count === 1 ? 'pro' : 'pros'} para la cuenta{' '}
-        <span className="font-mono text-white">#{data.account_id}</span>
-      </p>
+      {/* Summary bar */}
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <p data-testid="summary-bar" className="text-gray-400">
+          <span className="text-2xl font-bold text-dota-gold">{count}</span>{' '}
+          <span className="text-sm">
+            {count === 1 ? 'pro encontrado' : 'pros encontrados'} para la cuenta{' '}
+            <span className="font-mono text-white">#{data.account_id}</span>
+          </span>
+        </p>
 
-      <div className="overflow-x-auto rounded-lg border border-dota-border">
+        <span className="hidden rounded-full border border-dota-border px-3 py-1 text-xs text-gray-600 sm:block">
+          Datos de OpenDota
+        </span>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-xl border border-dota-border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-dota-border bg-dota-surface">
@@ -36,7 +45,7 @@ export function ProEncounterTable({ data }: Props) {
                 <th
                   key={key}
                   scope="col"
-                  className="px-4 py-3 text-left text-gray-400 font-medium uppercase tracking-wide text-xs whitespace-nowrap"
+                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-widest text-gray-500 whitespace-nowrap"
                 >
                   {label}
                 </th>
@@ -44,8 +53,8 @@ export function ProEncounterTable({ data }: Props) {
             </tr>
           </thead>
           <tbody>
-            {data.pros.map((pro) => (
-              <ProEncounterRow key={pro.account_id} pro={pro} />
+            {data.pros.map((pro, index) => (
+              <ProEncounterRow key={pro.account_id} pro={pro} index={index} />
             ))}
           </tbody>
         </table>
