@@ -11,17 +11,16 @@ export function EmptyState({ accountId }: EmptyStateProps) {
       </div>
 
       <h2 className="mb-2 text-xl font-semibold text-white">
-        Sin encuentros con pros
+        No pro encounters found
       </h2>
 
       <p className="mb-1 text-gray-400">
-        No se encontraron partidas contra jugadores profesionales
-        para la cuenta{' '}
+        No matches against professional players found for account{' '}
         <span className="font-mono text-dota-gold">#{accountId}</span>.
       </p>
 
       <p className="text-sm text-gray-600">
-        Esto puede deberse a un perfil privado o sin historial público.
+        This may be due to a private profile or no public match history.
       </p>
     </div>
   )
