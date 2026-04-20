@@ -20,7 +20,7 @@ export function ProEncounterRow({ pro, index }: Props) {
       <td className="px-4 py-3">
         <img
           src={pro.avatarfull}
-          alt={`Avatar de ${pro.personaname}`}
+          alt={`${pro.personaname}'s avatar`}
           className="h-10 w-10 rounded-full object-cover ring-2 ring-dota-border transition-all group-hover:ring-dota-gold/40"
         />
       </td>
