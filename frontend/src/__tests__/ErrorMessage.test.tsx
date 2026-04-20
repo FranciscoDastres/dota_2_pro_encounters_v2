@@ -4,13 +4,13 @@ import { ErrorMessage } from '../components/ErrorMessage'
 
 describe('ErrorMessage', () => {
   it('renders the error message text', () => {
-    render(<ErrorMessage message="Error de conexión" />)
-    expect(screen.getByRole('alert')).toHaveTextContent('Error de conexión')
+    render(<ErrorMessage message="Connection error" />)
+    expect(screen.getByRole('alert')).toHaveTextContent('Connection error')
   })
 
   it('renders retry button when onRetry is provided', () => {
     render(<ErrorMessage message="Error" onRetry={vi.fn()} />)
-    expect(screen.getByRole('button', { name: /intentar de nuevo/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument()
   })
 
   it('does not render retry button when onRetry is omitted', () => {

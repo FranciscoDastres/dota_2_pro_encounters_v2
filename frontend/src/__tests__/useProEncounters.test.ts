@@ -48,13 +48,13 @@ describe('useProEncounters', () => {
   })
 
   it('sets error state on rejection', async () => {
-    vi.mocked(api.fetchProEncounters).mockRejectedValueOnce(new Error('Cuenta no encontrada'))
+    vi.mocked(api.fetchProEncounters).mockRejectedValueOnce(new Error('Account not found'))
 
     const { result } = renderHook(() => useProEncounters())
     await act(async () => { await result.current.search('12345678') })
 
     expect(result.current.status).toBe('error')
-    expect(result.current.error).toBe('Cuenta no encontrada')
+    expect(result.current.error).toBe('Account not found')
     expect(result.current.data).toBeNull()
   })
 

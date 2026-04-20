@@ -9,11 +9,11 @@ describe('formatDate', () => {
     const result = formatDate('2024-01-15T20:00:00.000Z')
     expect(result).toBeTruthy()
     expect(result).not.toBe('N/A')
-    expect(result).not.toBe('Fecha inválida')
+    expect(result).not.toBe('Invalid date')
   })
 
-  it('returns "Fecha inválida" for a malformed string', () => {
-    expect(formatDate('not-a-date')).toBe('Fecha inválida')
+  it('returns "Invalid date" for a malformed string', () => {
+    expect(formatDate('not-a-date')).toBe('Invalid date')
   })
 })
 

@@ -16,7 +16,7 @@ router.get('/:accountId', async (req: Request, res: Response, next: NextFunction
     const { accountId } = req.params
 
     if (!/^\d+$/.test(accountId)) {
-      const err = new Error('Account ID inválido. Debe contener solo números.') as AppError
+      const err = new Error('Invalid Account ID. Numbers only.') as AppError
       err.status = 400
       return next(err)
     }
@@ -30,8 +30,8 @@ router.get('/:accountId', async (req: Request, res: Response, next: NextFunction
       const status = err.response?.status
       const appErr = new Error(
         status === 429
-          ? 'OpenDota ha limitado las solicitudes. Intenta en unos segundos.'
-          : 'No se pudo conectar con la API de OpenDota.',
+          ? 'OpenDota rate limit reached. Please try again in a few seconds.'
+          : 'Could not connect to the OpenDota API.',
       ) as AppError
       appErr.status = status === 429 ? 429 : 503
       return next(appErr)

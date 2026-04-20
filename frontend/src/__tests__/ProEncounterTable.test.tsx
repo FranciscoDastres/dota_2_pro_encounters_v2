@@ -40,7 +40,7 @@ describe('ProEncounterTable', () => {
     render(<ProEncounterTable data={mockData} />)
     const bar = screen.getByTestId('summary-bar')
     expect(bar).toHaveTextContent('2')
-    expect(bar).toHaveTextContent('pros encontrados')
+    expect(bar).toHaveTextContent('pros found')
   })
 
   it('renders all pro player names', () => {
@@ -65,15 +65,15 @@ describe('ProEncounterTable', () => {
 
   it('renders all column headers', () => {
     render(<ProEncounterTable data={mockData} />)
-    expect(screen.getByText('Jugador')).toBeInTheDocument()
-    expect(screen.getByText('Equipo')).toBeInTheDocument()
-    expect(screen.getByText('Partidas')).toBeInTheDocument()
-    expect(screen.getByText('Victorias')).toBeInTheDocument()
+    expect(screen.getByText('Player')).toBeInTheDocument()
+    expect(screen.getByText('Team')).toBeInTheDocument()
+    expect(screen.getByText('Games')).toBeInTheDocument()
+    expect(screen.getByText('Wins')).toBeInTheDocument()
     expect(screen.getByText('Win%')).toBeInTheDocument()
   })
 
   it('renders avatar images with alt text', () => {
     render(<ProEncounterTable data={mockData} />)
-    expect(screen.getByAltText('Avatar de Miracle-')).toBeInTheDocument()
+    expect(screen.getByAltText("Miracle-'s avatar")).toBeInTheDocument()
   })
 })
