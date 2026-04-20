@@ -38,7 +38,9 @@ describe('ProEncounterTable', () => {
 
   it('renders the correct pro count in the summary', () => {
     render(<ProEncounterTable data={mockData} />)
-    expect(screen.getByText(/se encontraron/i).textContent).toMatch(/2/)
+    const bar = screen.getByTestId('summary-bar')
+    expect(bar).toHaveTextContent('2')
+    expect(bar).toHaveTextContent('pros encontrados')
   })
 
   it('renders all pro player names', () => {
