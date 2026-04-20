@@ -5,5 +5,5 @@ export const apiLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Demasiadas solicitudes. Intenta de nuevo en unos minutos.', status: 429 },
+  message: { error: 'Too many requests. Please try again in a few minutes.', status: 429 },
 })
