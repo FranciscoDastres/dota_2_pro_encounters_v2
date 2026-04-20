@@ -1,23 +1,76 @@
-import type { ProEncountersResponse } from '../types'
+import { useState, useMemo } from 'react'
+import type { ProEncountersResponse, ProEncounter } from '../types'
 import { ProEncounterRow } from './ProEncounterRow'
 
 interface Props {
   data: ProEncountersResponse
 }
 
-const HEADERS = [
-  { key: 'avatar',      label: 'Avatar' },
-  { key: 'player',      label: 'Player' },
-  { key: 'team',        label: 'Team' },
-  { key: 'last_match',  label: 'Last Match' },
-  { key: 'games',       label: 'Games' },
-  { key: 'wins',        label: 'Wins' },
-  { key: 'winrate',     label: 'Win%' },
-  { key: 'country',     label: 'Country' },
-] as const
+type SortKey = 'personaname' | 'team_name' | 'last_match_time' | 'games' | 'win' | 'winrate'
+type SortDir = 'asc' | 'desc'
+
+interface Header {
+  key: string
+  label: string
+  sortKey: SortKey | null
+  align?: 'left' | 'center'
+}
+
+const HEADERS: Header[] = [
+  { key: 'avatar',     label: 'Avatar',      sortKey: null },
+  { key: 'player',     label: 'Player',      sortKey: 'personaname' },
+  { key: 'team',       label: 'Team',        sortKey: 'team_name' },
+  { key: 'last_match', label: 'Last Match',  sortKey: 'last_match_time' },
+  { key: 'games',      label: 'Games',       sortKey: 'games',           align: 'center' },
+  { key: 'wins',       label: 'Wins',        sortKey: 'win',             align: 'center' },
+  { key: 'winrate',    label: 'Win%',        sortKey: 'winrate',         align: 'center' },
+  { key: 'country',    label: 'Country',     sortKey: null,              align: 'center' },
+  { key: 'expand',     label: '',            sortKey: null },
+]
+
+function sortPros(pros: ProEncounter[], key: SortKey, dir: SortDir): ProEncounter[] {
+  return [...pros].sort((a, b) => {
+    let valA: number | string
+    let valB: number | string
+
+    switch (key) {
+      case 'winrate':
+        valA = a.games > 0 ? a.win / a.games : -1
+        valB = b.games > 0 ? b.win / b.games : -1
+        break
+      case 'last_match_time':
+        valA = a.last_match_time ? new Date(a.last_match_time).getTime() : 0
+        valB = b.last_match_time ? new Date(b.last_match_time).getTime() : 0
+        break
+      default:
+        valA = (a[key] as number | string) ?? ''
+        valB = (b[key] as number | string) ?? ''
+    }
+
+    if (valA < valB) return dir === 'asc' ? -1 : 1
+    if (valA > valB) return dir === 'asc' ? 1 : -1
+    return 0
+  })
+}
 
 export function ProEncounterTable({ data }: Props) {
   const count = data.pros.length
+  const [sortKey, setSortKey] = useState<SortKey>('games')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
+
+  const sorted = useMemo(
+    () => sortPros(data.pros, sortKey, sortDir),
+    [data.pros, sortKey, sortDir],
+  )
+
+  function handleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDir('desc')
+    }
+  }
 
   return (
     <div>
@@ -41,20 +94,39 @@ export function ProEncounterTable({ data }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-dota-border bg-dota-surface">
-              {HEADERS.map(({ key, label }) => (
+              {HEADERS.map(({ key, label, sortKey: sk, align }) => (
                 <th
                   key={key}
                   scope="col"
-                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-widest text-gray-500 whitespace-nowrap"
+                  className={[
+                    'px-4 py-3 text-xs font-medium uppercase tracking-widest text-gray-500 whitespace-nowrap',
+                    align === 'center' ? 'text-center' : 'text-left',
+                    sk ? 'cursor-pointer select-none hover:text-gray-300 transition-colors' : '',
+                  ].join(' ')}
+                  onClick={sk ? () => handleSort(sk) : undefined}
                 >
                   {label}
+                  {sk && (
+                    <span className="ml-1 inline-block w-3">
+                      {sortKey === sk
+                        ? sortDir === 'asc'
+                          ? '↑'
+                          : '↓'
+                        : <span className="text-gray-700">↕</span>}
+                    </span>
+                  )}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {data.pros.map((pro, index) => (
-              <ProEncounterRow key={pro.account_id} pro={pro} index={index} />
+            {sorted.map((pro, index) => (
+              <ProEncounterRow
+                key={pro.account_id}
+                pro={pro}
+                index={index}
+                accountId={data.account_id}
+              />
             ))}
           </tbody>
         </table>

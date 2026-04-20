@@ -1,4 +1,4 @@
-import type { ProEncountersResponse } from '../types'
+import type { ProEncountersResponse, SharedMatchesResponse } from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -14,4 +14,20 @@ export async function fetchProEncounters(steamId: string): Promise<ProEncounters
   }
 
   return response.json() as Promise<ProEncountersResponse>
+}
+
+export async function fetchSharedMatches(
+  accountId: number,
+  proAccountId: number,
+): Promise<SharedMatchesResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/pro-matches/${encodeURIComponent(accountId)}/${encodeURIComponent(proAccountId)}`,
+  )
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as { error?: string }
+    throw new Error(body.error ?? `HTTP Error ${response.status}`)
+  }
+
+  return response.json() as Promise<SharedMatchesResponse>
 }
