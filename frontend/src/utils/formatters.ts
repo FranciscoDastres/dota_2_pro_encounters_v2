@@ -1,8 +1,8 @@
 export function formatDate(isoString: string | null): string {
   if (!isoString) return 'N/A'
   const date = new Date(isoString)
-  if (isNaN(date.getTime())) return 'Fecha inválida'
-  return date.toLocaleDateString('es-CL', {
+  if (isNaN(date.getTime())) return 'Invalid date'
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
