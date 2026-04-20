@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { env } from '../config/env'
-import type { OpenDotaProPlayer, OpenDotaMatch, OpenDotaMatchDetail } from '../types'
+import type { OpenDotaProEncounter } from '../types'
 
 const client = axios.create({
   baseURL: env.OPENDOTA_API_URL,
@@ -9,30 +9,10 @@ const client = axios.create({
 })
 
 /**
- * Returns the full list of professional players tracked by OpenDota.
+ * Returns all pro players a given account has played with/against.
+ * Endpoint: GET /players/{account_id}/pros
  */
-export async function getProPlayers(): Promise<OpenDotaProPlayer[]> {
-  const { data } = await client.get<OpenDotaProPlayer[]>('/proPlayers')
-  return data
-}
-
-/**
- * Returns the last `limit` public matches for a given account.
- */
-export async function getPlayerMatches(
-  accountId: number,
-  limit = 50,
-): Promise<OpenDotaMatch[]> {
-  const { data } = await client.get<OpenDotaMatch[]>(`/players/${accountId}/matches`, {
-    params: { limit },
-  })
-  return data
-}
-
-/**
- * Returns full match details including all 10 players.
- */
-export async function getMatchDetail(matchId: number): Promise<OpenDotaMatchDetail> {
-  const { data } = await client.get<OpenDotaMatchDetail>(`/matches/${matchId}`)
+export async function getPlayerPros(accountId: number): Promise<OpenDotaProEncounter[]> {
+  const { data } = await client.get<OpenDotaProEncounter[]>(`/players/${accountId}/pros`)
   return data
 }
