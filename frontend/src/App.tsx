@@ -4,26 +4,59 @@ import { LoadingSpinner } from './components/LoadingSpinner'
 import { ErrorMessage } from './components/ErrorMessage'
 import { EmptyState } from './components/EmptyState'
 import { ProEncounterTable } from './components/ProEncounterTable'
+import { Footer } from './components/Footer'
 
 function App() {
   const { data, status, error, search, reset } = useProEncounters()
 
   return (
-    <div className="min-h-screen bg-dota-dark text-white">
-      <header className="py-12 text-center px-4">
-        <h1 className="text-4xl font-bold text-dota-gold mb-3">
-          Dota 2 Pro Encounters
-        </h1>
-        <p className="text-gray-400 text-lg max-w-xl mx-auto">
-          Ingresa tu Account ID y descubre si alguna vez jugaste con o contra jugadores profesionales.
-        </p>
+    <div className="min-h-screen bg-dota-dark text-white flex flex-col">
+
+      {/* ── Hero ─────────────────────────────────────────── */}
+      <header className="relative overflow-hidden py-20 px-4 text-center">
+        {/* Background glow */}
+        <div className="pointer-events-none absolute -top-32 left-1/2 h-72 w-[640px] -translate-x-1/2 rounded-full bg-dota-gold/8 blur-[100px] animate-glow" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-dota-border to-transparent" />
+
+        <div className="relative mx-auto max-w-3xl">
+          <p className="mb-3 text-xs uppercase tracking-[0.2em] text-dota-gold/70">
+            OpenDota API
+          </p>
+
+          <h1 className="mb-5 text-5xl font-bold leading-tight md:text-6xl">
+            <span className="bg-gradient-to-r from-dota-gold to-dota-gold-light bg-clip-text text-transparent">
+              Dota 2
+            </span>{' '}
+            <span className="text-white">Pro Encounters</span>
+          </h1>
+
+          <p className="mx-auto mb-8 max-w-xl text-lg text-gray-400">
+            Ingresa tu{' '}
+            <strong className="font-semibold text-white">Account ID</strong> y descubre
+            si alguna vez compartiste una partida con jugadores profesionales.
+          </p>
+
+          <div className="flex justify-center">
+            <SearchForm onSearch={search} loading={status === 'loading'} />
+          </div>
+
+          <p className="mt-4 text-xs text-gray-600">
+            ¿No sabes tu Account ID? Búscate en{' '}
+            <a
+              href="https://www.opendota.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 underline-offset-2 hover:text-dota-gold hover:underline transition-colors"
+            >
+              opendota.com
+            </a>
+            , aparece en la URL de tu perfil.
+          </p>
+        </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 pb-16">
-        <section className="flex justify-center mb-10">
-          <SearchForm onSearch={search} loading={status === 'loading'} />
-        </section>
-
+      {/* ── Results ──────────────────────────────────────── */}
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-12">
         {status === 'loading' && <LoadingSpinner />}
 
         {status === 'error' && error && (
@@ -35,9 +68,13 @@ function App() {
         )}
 
         {status === 'success' && data && data.pros.length > 0 && (
-          <ProEncounterTable data={data} />
+          <div className="animate-fade-up">
+            <ProEncounterTable data={data} />
+          </div>
         )}
       </main>
+
+      <Footer />
     </div>
   )
 }
