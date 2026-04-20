@@ -1,10 +1,10 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
 import app from '../app'
-import * as openDotaService from '../services/openDota.service'
+import * as cacheService from '../services/cache.service'
 import type { OpenDotaProEncounter } from '../types'
 
-vi.mock('../services/openDota.service')
+vi.mock('../services/cache.service')
 
 const mockPros: OpenDotaProEncounter[] = [
   {
@@ -37,7 +37,7 @@ describe('GET /api/pro-encounters/:accountId', () => {
   })
 
   it('returns 200 with pros array for a valid accountId', async () => {
-    vi.mocked(openDotaService.getPlayerPros).mockResolvedValueOnce(mockPros)
+    vi.mocked(cacheService.getPlayerProsWithCache).mockResolvedValueOnce(mockPros)
 
     const res = await request(app).get('/api/pro-encounters/12345678')
 
@@ -48,7 +48,7 @@ describe('GET /api/pro-encounters/:accountId', () => {
   })
 
   it('returns 200 with empty pros array when player has no pro encounters', async () => {
-    vi.mocked(openDotaService.getPlayerPros).mockResolvedValueOnce([])
+    vi.mocked(cacheService.getPlayerProsWithCache).mockResolvedValueOnce([])
 
     const res = await request(app).get('/api/pro-encounters/99999999')
 
@@ -75,7 +75,7 @@ describe('GET /api/pro-encounters/:accountId', () => {
       isAxiosError: true,
       response: undefined,
     })
-    vi.mocked(openDotaService.getPlayerPros).mockRejectedValueOnce(networkErr)
+    vi.mocked(cacheService.getPlayerProsWithCache).mockRejectedValueOnce(networkErr)
 
     const res = await request(app).get('/api/pro-encounters/12345678')
 
@@ -88,7 +88,7 @@ describe('GET /api/pro-encounters/:accountId', () => {
       isAxiosError: true,
       response: { status: 429 },
     })
-    vi.mocked(openDotaService.getPlayerPros).mockRejectedValueOnce(rateLimitErr)
+    vi.mocked(cacheService.getPlayerProsWithCache).mockRejectedValueOnce(rateLimitErr)
 
     const res = await request(app).get('/api/pro-encounters/12345678')
 
@@ -96,7 +96,7 @@ describe('GET /api/pro-encounters/:accountId', () => {
   })
 
   it('returns 500 on unexpected service errors', async () => {
-    vi.mocked(openDotaService.getPlayerPros).mockRejectedValueOnce(new Error('Unexpected'))
+    vi.mocked(cacheService.getPlayerProsWithCache).mockRejectedValueOnce(new Error('Unexpected'))
 
     const res = await request(app).get('/api/pro-encounters/12345678')
 

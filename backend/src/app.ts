@@ -10,9 +10,20 @@ const app = express()
 
 app.use(helmet())
 
+const allowedOrigins = env.isDevelopment
+  ? [env.FRONTEND_URL, 'http://localhost:5173', 'http://127.0.0.1:5173']
+  : [env.FRONTEND_URL]
+
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      // Allow server-to-server calls (no Origin header) and listed origins
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     methods: ['GET'],
     optionsSuccessStatus: 200,
   }),
