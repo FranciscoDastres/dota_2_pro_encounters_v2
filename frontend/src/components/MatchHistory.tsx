@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useSharedMatches } from '../hooks/useSharedMatches'
-import type { SharedMatch } from '../types'
+import type { SharedMatch, MatchFilter } from '../types'
 
 interface Props {
   accountId: number
@@ -27,88 +27,115 @@ function formatMatchDate(unixSeconds: number): string {
   })
 }
 
+const TABS: { key: MatchFilter; label: string }[] = [
+  { key: 'all',     label: 'All' },
+  { key: 'with',    label: 'Ally' },
+  { key: 'against', label: 'Enemy' },
+]
+
 export function MatchHistory({ accountId, proAccountId }: Props) {
-  const { data, status, error, load } = useSharedMatches(accountId, proAccountId)
+  const { data, status, error, load, activeFilter, changeFilter, cache } =
+    useSharedMatches(accountId, proAccountId)
 
   useEffect(() => {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (status === 'loading' || status === 'idle') {
-    return (
-      <div className="flex items-center justify-center gap-2 py-4 text-sm text-gray-500">
-        <span className="h-4 w-4 animate-spin rounded-full border-2 border-dota-border border-t-dota-gold" />
-        Loading matches…
-      </div>
-    )
-  }
+  const matchLabel = activeFilter === 'with' ? 'ally' : activeFilter === 'against' ? 'enemy' : 'shared'
 
-  if (status === 'error') {
-    return (
-      <p className="py-3 text-center text-sm text-dota-red/80">{error}</p>
-    )
-  }
-
-  if (!data || data.length === 0) {
-    return (
-      <p className="py-3 text-center text-sm text-gray-600">
-        No match details available for this player.
-      </p>
-    )
+  function tabCount(key: MatchFilter): string {
+    const s = cache[key]
+    if (s.status === 'success' && s.data) return ` (${s.data.length})`
+    if (s.status === 'loading') return ' …'
+    return ''
   }
 
   return (
     <div>
-      <p className="mb-2 text-xs text-gray-600">
-        {data.length} shared {data.length === 1 ? 'match' : 'matches'} — click any to open in OpenDota
-      </p>
-      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {data.map((match) => {
-          const won = isWin(match)
-          return (
-            <a
-              key={match.match_id}
-              href={`https://www.opendota.com/matches/${match.match_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={[
-                'flex items-center justify-between rounded-lg border px-3 py-2 text-xs',
-                'transition-all duration-150 hover:scale-[1.01]',
-                won
-                  ? 'border-dota-radiant/25 bg-dota-radiant/5 hover:border-dota-radiant/50 hover:bg-dota-radiant/10'
-                  : 'border-dota-dire/25 bg-dota-dire/5 hover:border-dota-dire/50 hover:bg-dota-dire/10',
-              ].join(' ')}
-            >
-              {/* Left: ID + date */}
-              <div className="flex flex-col gap-0.5">
-                <span className="font-mono text-[11px] text-gray-400">
-                  #{match.match_id}
-                </span>
-                <span className="text-[10px] text-gray-600">
-                  {formatMatchDate(match.start_time)}
-                </span>
-              </div>
-
-              {/* Right: result + stats */}
-              <div className="flex flex-col items-end gap-0.5">
-                <span
-                  className={`text-[11px] font-bold ${
-                    won ? 'text-dota-radiant' : 'text-dota-dire'
-                  }`}
-                >
-                  {won ? 'WIN' : 'LOSS'}
-                </span>
-                <span className="font-mono text-[10px] text-gray-500">
-                  {match.kills}/{match.deaths}/{match.assists}
-                  {' · '}
-                  {formatDuration(match.duration)}
-                </span>
-              </div>
-            </a>
-          )
-        })}
+      {/* Filter tabs */}
+      <div className="mb-3 flex gap-1.5">
+        {TABS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => changeFilter(key)}
+            className={[
+              'rounded-md border px-3 py-1 text-[11px] font-medium transition-all',
+              activeFilter === key
+                ? 'border-dota-gold/50 bg-dota-gold/10 text-dota-gold'
+                : 'border-dota-border text-gray-600 hover:border-dota-gold/40 hover:text-dota-gold',
+            ].join(' ')}
+          >
+            {label}{tabCount(key)}
+          </button>
+        ))}
       </div>
+
+      {/* Content */}
+      {status === 'loading' || status === 'idle' ? (
+        <div className="flex items-center justify-center gap-2 py-4 text-sm text-gray-500">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-dota-border border-t-dota-gold" />
+          Loading matches…
+        </div>
+      ) : status === 'error' ? (
+        <p className="py-3 text-center text-sm text-dota-red/80">{error}</p>
+      ) : !data || data.length === 0 ? (
+        <p className="py-3 text-center text-sm text-gray-600">
+          No {matchLabel} matches found.
+        </p>
+      ) : (
+        <div>
+          <p className="mb-2 text-xs text-gray-600">
+            {data.length} {matchLabel} {data.length === 1 ? 'match' : 'matches'} — click any to open in OpenDota
+          </p>
+          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {data.map((match) => {
+              const won = isWin(match)
+              return (
+                <a
+                  key={match.match_id}
+                  href={`https://www.opendota.com/matches/${match.match_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={[
+                    'flex items-center justify-between rounded-lg border px-3 py-2 text-xs',
+                    'transition-all duration-150 hover:scale-[1.01]',
+                    won
+                      ? 'border-dota-radiant/25 bg-dota-radiant/5 hover:border-dota-radiant/50 hover:bg-dota-radiant/10'
+                      : 'border-dota-dire/25 bg-dota-dire/5 hover:border-dota-dire/50 hover:bg-dota-dire/10',
+                  ].join(' ')}
+                >
+                  {/* Left: ID + date */}
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-mono text-[11px] text-gray-400">
+                      #{match.match_id}
+                    </span>
+                    <span className="text-[10px] text-gray-600">
+                      {formatMatchDate(match.start_time)}
+                    </span>
+                  </div>
+
+                  {/* Right: result + stats */}
+                  <div className="flex flex-col items-end gap-0.5">
+                    <span
+                      className={`text-[11px] font-bold ${
+                        won ? 'text-dota-radiant' : 'text-dota-dire'
+                      }`}
+                    >
+                      {won ? 'WIN' : 'LOSS'}
+                    </span>
+                    <span className="font-mono text-[10px] text-gray-500">
+                      {match.kills}/{match.deaths}/{match.assists}
+                      {' · '}
+                      {formatDuration(match.duration)}
+                    </span>
+                  </div>
+                </a>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
