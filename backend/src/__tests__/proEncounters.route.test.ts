@@ -80,7 +80,7 @@ describe('GET /api/pro-encounters/:accountId', () => {
     const res = await request(app).get('/api/pro-encounters/12345678')
 
     expect(res.status).toBe(503)
-    expect(res.body.error).toMatch(/OpenDota/i)
+    expect(res.body.error).toBe('Internal server error')
   })
 
   it('returns 429 when OpenDota rate-limits the request', async () => {
