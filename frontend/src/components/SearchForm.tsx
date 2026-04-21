@@ -37,6 +37,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
             id="account-id"
             type="text"
             inputMode="numeric"
+            maxLength={10}
             placeholder="Account ID (e.g., 123456789)"
             value={value}
             onChange={(e) => {
