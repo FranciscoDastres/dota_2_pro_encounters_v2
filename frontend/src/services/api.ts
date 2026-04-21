@@ -7,7 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 const proEncounterSchema = z.object({
   account_id: z.number(),
-  name: z.string().nullable().optional(), // professional scene name; absent on older cached entries
+  name: z.string().nullable().optional(),
   avatarfull: z.string(),
   profileurl: z.string(),
   personaname: z.string(),
@@ -16,6 +16,10 @@ const proEncounterSchema = z.object({
   games: z.number(),
   win: z.number(),
   country_code: z.string().nullable(),
+  with_games: z.number().optional(),
+  with_win: z.number().optional(),
+  against_games: z.number().optional(),
+  against_win: z.number().optional(),
 })
 
 const proEncountersResponseSchema = z.object({
@@ -95,10 +99,11 @@ export async function fetchProEncounters(steamId: string): Promise<ProEncounters
 export async function fetchSharedMatches(
   accountId: number,
   proAccountId: number,
+  filter?: 'with' | 'against',
 ): Promise<SharedMatchesResponse> {
-  const response = await fetchWithRetry(
-    `${API_BASE_URL}/api/pro-matches/${encodeURIComponent(accountId)}/${encodeURIComponent(proAccountId)}`,
-  )
+  const base = `${API_BASE_URL}/api/pro-matches/${encodeURIComponent(accountId)}/${encodeURIComponent(proAccountId)}`
+  const url = filter ? `${base}?filter=${filter}` : base
+  const response = await fetchWithRetry(url)
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { error?: string }
