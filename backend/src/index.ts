@@ -1,8 +1,9 @@
 import app from './app'
 import { env } from './config/env'
+import { logger } from './config/logger'
 import { startKeepAlive } from './keepAlive'
 
 app.listen(env.PORT, () => {
-  console.log(`[server] Running on http://localhost:${env.PORT} (${env.NODE_ENV})`)
+  logger.info('server started', { port: env.PORT, env: env.NODE_ENV })
   startKeepAlive()
 })
