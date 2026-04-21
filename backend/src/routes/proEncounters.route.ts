@@ -3,6 +3,8 @@ import type { Request, Response, NextFunction } from 'express'
 import axios from 'axios'
 import { getPlayerProsWithCache } from '../services/cache.service'
 import type { AppError } from '../middleware/errorHandler'
+import { validateParams } from '../middleware/validate'
+import { proEncountersParamsSchema } from '../schemas/params.schema'
 
 const router = Router()
 
@@ -11,16 +13,9 @@ const router = Router()
  * Returns all pro players a given Dota 2 account has played with/against.
  * Responses are served from Supabase cache (TTL 1h) when available.
  */
-router.get('/:accountId', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:accountId', validateParams(proEncountersParamsSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { accountId } = req.params
-
-    if (!/^\d+$/.test(accountId)) {
-      const err = new Error('Invalid Account ID. Numbers only.') as AppError
-      err.status = 400
-      return next(err)
-    }
-
     const accountIdNum = parseInt(accountId, 10)
     const pros = await getPlayerProsWithCache(accountIdNum)
 
