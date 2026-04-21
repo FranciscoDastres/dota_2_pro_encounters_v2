@@ -75,7 +75,7 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
         {/* Losses */}
         <td className="px-4 py-3 text-center font-mono text-dota-dire">{pro.games - pro.win}</td>
 
-        {/* Win% with mini bar */}
+        {/* Win% with mini bar + ally/enemy breakdown */}
         <td className="px-4 py-3">
           <div className="flex flex-col items-center gap-1">
             <span
@@ -93,6 +93,24 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
                   }`}
                   style={{ width: `${winPct}%` }}
                 />
+              </div>
+            )}
+            {/* Ally / Enemy win rate breakdown */}
+            {((pro.with_games ?? 0) > 0 || (pro.against_games ?? 0) > 0) && (
+              <div className="flex gap-1.5 text-[10px] font-mono">
+                {(pro.with_games ?? 0) > 0 && (
+                  <span className="text-dota-radiant/70">
+                    W/{Math.round(((pro.with_win ?? 0) / pro.with_games!) * 100)}%
+                  </span>
+                )}
+                {(pro.with_games ?? 0) > 0 && (pro.against_games ?? 0) > 0 && (
+                  <span className="text-gray-700">·</span>
+                )}
+                {(pro.against_games ?? 0) > 0 && (
+                  <span className="text-dota-dire/70">
+                    vs {Math.round(((pro.against_win ?? 0) / pro.against_games!) * 100)}%
+                  </span>
+                )}
               </div>
             )}
           </div>
