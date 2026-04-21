@@ -6,9 +6,10 @@
  */
 export interface OpenDotaProEncounter {
   account_id: number
+  name: string | null        // Professional/scene name (e.g. "Miracle-", "N0tail")
   avatarfull: string
   profileurl: string
-  personaname: string
+  personaname: string        // Current Steam display name (can change)
   team_name: string | null
   last_match_time: string | null // ISO date string e.g. "2024-01-15T20:00:00.000Z"
   games: number
