@@ -48,7 +48,7 @@ app.use(
   }),
 )
 
-app.use(express.json())
+app.use(express.json({ limit: '100kb' }))
 
 app.use('/api', apiLimiter)
 app.use('/api', apiRouter)
