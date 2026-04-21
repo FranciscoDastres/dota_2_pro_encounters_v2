@@ -3,6 +3,8 @@ import type { Request, Response, NextFunction } from 'express'
 import axios from 'axios'
 import { getSharedMatches } from '../services/openDota.service'
 import type { AppError } from '../middleware/errorHandler'
+import { validateParams } from '../middleware/validate'
+import { proMatchesParamsSchema } from '../schemas/params.schema'
 
 const router = Router()
 
@@ -10,15 +12,9 @@ const router = Router()
  * GET /api/pro-matches/:accountId/:proAccountId
  * Returns the shared match history between a user and a specific pro player.
  */
-router.get('/:accountId/:proAccountId', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:accountId/:proAccountId', validateParams(proMatchesParamsSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { accountId, proAccountId } = req.params
-
-    if (!/^\d+$/.test(accountId) || !/^\d+$/.test(proAccountId)) {
-      const err = new Error('Invalid Account ID. Numbers only.') as AppError
-      err.status = 400
-      return next(err)
-    }
 
     const matches = await getSharedMatches(
       parseInt(accountId, 10),
