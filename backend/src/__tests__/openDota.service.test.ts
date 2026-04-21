@@ -9,6 +9,7 @@ vi.mock('axios', () => ({
     create: vi.fn(() => ({ get: mockGet })),
     isAxiosError: vi.fn((err) => Boolean((err as { isAxiosError?: boolean }).isAxiosError)),
   },
+  AxiosError: class AxiosError extends Error {},
 }))
 
 // Import AFTER mock setup so the service picks up the mocked axios.create
