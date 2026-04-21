@@ -10,7 +10,13 @@ export interface ProEncounter {
   games: number
   win: number
   country_code: string | null
+  with_games?: number        // Games played on same team as this pro
+  with_win?: number
+  against_games?: number     // Games played against this pro
+  against_win?: number
 }
+
+export type MatchFilter = 'all' | 'with' | 'against'
 
 export interface ProEncountersResponse {
   account_id: number
