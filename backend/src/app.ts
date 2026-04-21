@@ -10,7 +10,23 @@ import apiRouter from './routes'
 
 const app = express()
 
-app.use(helmet())
+app.use(
+  helmet({
+    // Pure REST API — block all content sources and framing
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+    // HSTS: 1 year, include subdomains, opt-in to preload list
+    hsts: {
+      maxAge: 31_536_000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }),
+)
 app.use(morgan(env.isDevelopment ? 'dev' : 'combined', { stream: morganStream }))
 
 const allowedOrigins = env.isDevelopment
