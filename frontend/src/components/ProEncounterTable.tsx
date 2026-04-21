@@ -6,7 +6,7 @@ interface Props {
   data: ProEncountersResponse
 }
 
-type SortKey = 'personaname' | 'team_name' | 'last_match_time' | 'games' | 'win' | 'winrate'
+type SortKey = 'personaname' | 'team_name' | 'last_match_time' | 'games' | 'win' | 'losses' | 'winrate'
 type SortDir = 'asc' | 'desc'
 
 interface Header {
@@ -22,7 +22,8 @@ const HEADERS: Header[] = [
   { key: 'team',       label: 'Team',        sortKey: 'team_name' },
   { key: 'last_match', label: 'Last Match',  sortKey: 'last_match_time' },
   { key: 'games',      label: 'Games',       sortKey: 'games',           align: 'center' },
-  { key: 'wins',       label: 'Wins',        sortKey: 'win',             align: 'center' },
+  { key: 'wins',       label: 'W',           sortKey: 'win',             align: 'center' },
+  { key: 'losses',     label: 'L',           sortKey: 'losses',          align: 'center' },
   { key: 'winrate',    label: 'Win%',        sortKey: 'winrate',         align: 'center' },
   { key: 'country',    label: 'Country',     sortKey: null,              align: 'center' },
   { key: 'expand',     label: '',            sortKey: null },
@@ -34,6 +35,10 @@ function sortPros(pros: ProEncounter[], key: SortKey, dir: SortDir): ProEncounte
     let valB: number | string
 
     switch (key) {
+      case 'losses':
+        valA = a.games - a.win
+        valB = b.games - b.win
+        break
       case 'winrate':
         valA = a.games > 0 ? a.win / a.games : -1
         valB = b.games > 0 ? b.win / b.games : -1

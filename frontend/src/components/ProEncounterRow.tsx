@@ -37,9 +37,22 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
             href={pro.profileurl}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-dota-gold transition-colors hover:text-dota-gold-light"
+            className="group/name flex flex-col gap-0.5"
           >
-            {pro.personaname}
+            {pro.name ? (
+              <>
+                <span className="font-semibold text-white transition-colors group-hover/name:text-dota-gold-light">
+                  {pro.name}
+                </span>
+                <span className="text-xs text-gray-500 transition-colors group-hover/name:text-gray-400">
+                  {pro.personaname}
+                </span>
+              </>
+            ) : (
+              <span className="font-medium text-dota-gold transition-colors group-hover/name:text-dota-gold-light">
+                {pro.personaname}
+              </span>
+            )}
           </a>
         </td>
 
@@ -58,6 +71,9 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
 
         {/* Wins */}
         <td className="px-4 py-3 text-center font-mono text-dota-radiant">{pro.win}</td>
+
+        {/* Losses */}
+        <td className="px-4 py-3 text-center font-mono text-dota-dire">{pro.games - pro.win}</td>
 
         {/* Win% with mini bar */}
         <td className="px-4 py-3">
@@ -111,7 +127,7 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
       {expanded && (
         <tr className="border-b border-dota-border/50">
           <td
-            colSpan={9}
+            colSpan={10}
             className="bg-dota-darker/60 px-6 py-4"
           >
             <MatchHistory accountId={accountId} proAccountId={pro.account_id} />

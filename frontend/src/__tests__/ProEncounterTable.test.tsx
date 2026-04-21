@@ -68,7 +68,8 @@ describe('ProEncounterTable', () => {
     expect(screen.getByText('Player')).toBeInTheDocument()
     expect(screen.getByText('Team')).toBeInTheDocument()
     expect(screen.getByText('Games')).toBeInTheDocument()
-    expect(screen.getByText('Wins')).toBeInTheDocument()
+    expect(screen.getByText('W')).toBeInTheDocument()
+    expect(screen.getByText('L')).toBeInTheDocument()
     expect(screen.getByText('Win%')).toBeInTheDocument()
   })
 
