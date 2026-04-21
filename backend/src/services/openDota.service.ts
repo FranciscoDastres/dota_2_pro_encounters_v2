@@ -110,18 +110,25 @@ export async function getPlayerPros(accountId: number): Promise<OpenDotaProEncou
 }
 
 /**
- * Returns the last N matches where both the user and a specific pro
- * were in the same game.
- * Endpoint: GET /players/{account_id}/matches?included_account_id={pro_account_id}&limit={limit}
+ * Returns matches where both the user and a specific pro appeared.
+ * - filter 'with'    → same team only    (with_account_id)
+ * - filter 'against' → opposing team only (against_account_id)
+ * - filter undefined → all shared matches (included_account_id)
  */
 export async function getSharedMatches(
   accountId: number,
   proAccountId: number,
   limit = 20,
+  filter?: 'with' | 'against',
 ): Promise<SharedMatch[]> {
+  const filterParam =
+    filter === 'with'    ? { with_account_id: proAccountId } :
+    filter === 'against' ? { against_account_id: proAccountId } :
+                           { included_account_id: proAccountId }
+
   const { data } = await withResilience('getSharedMatches', () =>
     client.get<SharedMatch[]>(`/players/${accountId}/matches`, {
-      params: { included_account_id: proAccountId, limit },
+      params: { ...filterParam, limit },
     }),
   )
   return data
