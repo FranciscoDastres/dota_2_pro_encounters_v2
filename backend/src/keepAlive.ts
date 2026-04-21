@@ -1,4 +1,5 @@
 import { env } from './config/env'
+import { logger } from './config/logger'
 
 const PING_INTERVAL_MS = 14 * 60 * 1000 // 14 minutes — Render spins down after 15 min
 
@@ -7,7 +8,7 @@ export function startKeepAlive(): void {
 
   const backendUrl = process.env.RENDER_EXTERNAL_URL
   if (!backendUrl) {
-    console.warn('[keep-alive] RENDER_EXTERNAL_URL not set — keep-alive disabled')
+    logger.warn('RENDER_EXTERNAL_URL not set — keep-alive disabled')
     return
   }
 
@@ -16,11 +17,11 @@ export function startKeepAlive(): void {
   setInterval(async () => {
     try {
       const res = await fetch(healthUrl)
-      console.log(`[keep-alive] ping → ${res.status}`)
+      logger.info('keep-alive ping', { status: res.status, url: healthUrl })
     } catch (err) {
-      console.error('[keep-alive] ping failed:', err)
+      logger.error('keep-alive ping failed', { url: healthUrl, err })
     }
   }, PING_INTERVAL_MS)
 
-  console.log(`[keep-alive] started — pinging ${healthUrl} every 14 min`)
+  logger.info('keep-alive started', { url: healthUrl, intervalMs: PING_INTERVAL_MS })
 }
