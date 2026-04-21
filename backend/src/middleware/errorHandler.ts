@@ -18,5 +18,8 @@ export function errorHandler(
     logger.error(message, { status, stack: err.stack })
   }
 
-  res.status(status).json({ error: message, status })
+  // Never expose internal details for server errors
+  const clientMessage = status >= 500 ? 'Internal server error' : message
+
+  res.status(status).json({ error: clientMessage, status })
 }
