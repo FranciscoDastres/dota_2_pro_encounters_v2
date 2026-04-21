@@ -7,6 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 const proEncounterSchema = z.object({
   account_id: z.number(),
+  name: z.string().nullable().optional(), // professional scene name; absent on older cached entries
   avatarfull: z.string(),
   profileurl: z.string(),
   personaname: z.string(),
