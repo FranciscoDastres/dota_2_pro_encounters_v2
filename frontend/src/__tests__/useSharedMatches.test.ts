@@ -110,6 +110,7 @@ describe('useSharedMatches', () => {
     const { result } = renderHook(() => useSharedMatches(12345678, 87278757))
     await act(async () => { await result.current.load() })
 
-    expect(vi.mocked(api.fetchSharedMatches)).toHaveBeenCalledWith(12345678, 87278757)
+    // load() triggers the 'all' filter — no filter param passed (undefined)
+    expect(vi.mocked(api.fetchSharedMatches)).toHaveBeenCalledWith(12345678, 87278757, undefined)
   })
 })
