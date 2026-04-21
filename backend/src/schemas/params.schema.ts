@@ -3,7 +3,7 @@ import { z } from 'zod'
 // Dota 2 account IDs are 32-bit unsigned integers (Steam ID3 format): 1–4 294 967 295
 const accountIdField = z
   .string()
-  .regex(/^\d+$/, 'Invalid account ID: numbers only')
+  .regex(/^\d{1,10}$/, 'Invalid account ID: numbers only')
   .refine(
     (val) => {
       const n = Number(val)
