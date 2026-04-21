@@ -1,4 +1,5 @@
 import { useProEncounters } from './hooks/useProEncounters'
+import { useOnlineStatus } from './hooks/useOnlineStatus'
 import { SearchForm } from './components/SearchForm'
 import { LoadingSpinner } from './components/LoadingSpinner'
 import { ErrorMessage } from './components/ErrorMessage'
@@ -6,12 +7,15 @@ import { EmptyState } from './components/EmptyState'
 import { ProEncounterTable } from './components/ProEncounterTable'
 import { Footer } from './components/Footer'
 import { KofiWidget } from './components/KofiWidget'
+import { OfflineBanner } from './components/OfflineBanner'
 
 function App() {
   const { data, status, error, search, reset } = useProEncounters()
+  const isOnline = useOnlineStatus()
 
   return (
     <div className="min-h-screen bg-dota-dark text-white flex flex-col">
+      {!isOnline && <OfflineBanner />}
 
       {/* ── Hero ─────────────────────────────────────────── */}
       <header className="relative overflow-hidden py-20 px-4 text-center">
