@@ -19,9 +19,12 @@ vi.mock('../services/supabase.service', () => ({
   supabase: { from: mockFrom },
 }))
 
-// Mutable env object — properties are read inside the function so changes reflect immediately
-const mockEnv = { SUPABASE_URL: '', SUPABASE_SERVICE_ROLE_KEY: '' }
-vi.mock('../config/env', () => ({ env: mockEnv }))
+vi.mock('../config/env', () => ({
+  env: {
+    SUPABASE_URL: 'https://test.supabase.co',
+    SUPABASE_SERVICE_ROLE_KEY: 'test-key',
+  },
+}))
 
 // Import after mocks so the module picks up the mocked dependencies
 const { getPlayerProsWithCache } = await import('../services/cache.service')
@@ -47,8 +50,6 @@ const mockPros: OpenDotaProEncounter[] = [
 describe('cache.service — getPlayerProsWithCache', () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    mockEnv.SUPABASE_URL = ''
-    mockEnv.SUPABASE_SERVICE_ROLE_KEY = ''
 
     // Re-wire the Supabase chainable mock after resetAllMocks clears implementations
     mockSingle.mockResolvedValue({ data: null, error: null })
@@ -58,30 +59,7 @@ describe('cache.service — getPlayerProsWithCache', () => {
     mockFrom.mockReturnValue({ select: mockSelect, upsert: mockUpsert })
   })
 
-  describe('when Supabase is not configured', () => {
-    it('calls getPlayerPros directly and returns its result', async () => {
-      mockGetPlayerPros.mockResolvedValueOnce(mockPros)
-
-      const result = await getPlayerProsWithCache(12345)
-
-      expect(mockGetPlayerPros).toHaveBeenCalledWith(12345)
-      expect(result).toEqual(mockPros)
-    })
-
-    it('does not touch the Supabase client', async () => {
-      mockGetPlayerPros.mockResolvedValueOnce([])
-
-      await getPlayerProsWithCache(12345)
-
-      expect(mockFrom).not.toHaveBeenCalled()
-    })
-  })
-
   describe('when Supabase is configured', () => {
-    beforeEach(() => {
-      mockEnv.SUPABASE_URL = 'https://example.supabase.co'
-      mockEnv.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
-    })
 
     it('returns cached data without calling OpenDota when the cache is fresh', async () => {
       mockSingle.mockResolvedValueOnce({

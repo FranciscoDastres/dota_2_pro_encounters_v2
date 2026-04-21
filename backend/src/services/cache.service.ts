@@ -1,5 +1,5 @@
+import { supabase } from './supabase.service'
 import { getPlayerPros } from './openDota.service'
-import { env } from '../config/env'
 import type { OpenDotaProEncounter } from '../types'
 
 /** Cache TTL: 1 hour */
@@ -8,16 +8,9 @@ const CACHE_TTL_MS = 60 * 60 * 1000
 /**
  * Returns pro encounters for a given account, reading from Supabase
  * match_cache when available (and fresh). Falls back to live OpenDota
- * call when Supabase is not configured or the cache entry is stale.
+ * call when the cache entry is stale or missing.
  */
 export async function getPlayerProsWithCache(accountId: number): Promise<OpenDotaProEncounter[]> {
-  const hasSupabase = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY)
-
-  if (!hasSupabase) {
-    return getPlayerPros(accountId)
-  }
-
-  const { supabase } = await import('./supabase.service')
 
   const { data: cached } = await supabase
     .from('match_cache')
