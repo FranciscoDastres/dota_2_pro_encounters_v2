@@ -6,7 +6,7 @@
  */
 export interface OpenDotaProEncounter {
   account_id: number
-  name: string | null        // Professional/scene name (e.g. "Miracle-", "N0tail")
+  name?: string | null       // Professional/scene name (e.g. "Miracle-", "N0tail")
   avatarfull: string
   profileurl: string
   personaname: string        // Current Steam display name (can change)
@@ -15,6 +15,11 @@ export interface OpenDotaProEncounter {
   games: number
   win: number
   country_code: string | null
+  // Ally/enemy breakdown — same fields returned by /players/{id}/pros
+  with_games?: number
+  with_win?: number
+  against_games?: number
+  against_win?: number
 }
 
 // ─── App response shapes ─────────────────────────────────────────────────────
