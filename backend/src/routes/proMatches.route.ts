@@ -15,10 +15,14 @@ const router = Router()
 router.get('/:accountId/:proAccountId', validateParams(proMatchesParamsSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { accountId, proAccountId } = req.params
+    const rawFilter = req.query.filter as string | undefined
+    const filter = rawFilter === 'with' || rawFilter === 'against' ? rawFilter : undefined
 
     const matches = await getSharedMatches(
       parseInt(accountId, 10),
       parseInt(proAccountId, 10),
+      20,
+      filter,
     )
 
     res.json({
