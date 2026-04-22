@@ -59,14 +59,22 @@ function sortPros(pros: ProEncounter[], key: SortKey, dir: SortDir): ProEncounte
 }
 
 export function ProEncounterTable({ data }: Props) {
-  const count = data.pros.length
+  const total = data.pros.length
   const [sortKey, setSortKey] = useState<SortKey>('games')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const [onlyNamed, setOnlyNamed] = useState(true)
+
+  const filtered = useMemo(
+    () => onlyNamed ? data.pros.filter(p => p.name) : data.pros,
+    [data.pros, onlyNamed],
+  )
 
   const sorted = useMemo(
-    () => sortPros(data.pros, sortKey, sortDir),
-    [data.pros, sortKey, sortDir],
+    () => sortPros(filtered, sortKey, sortDir),
+    [filtered, sortKey, sortDir],
   )
+
+  const count = sorted.length
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -80,18 +88,37 @@ export function ProEncounterTable({ data }: Props) {
   return (
     <div>
       {/* Summary bar */}
-      <div className="mb-4 flex items-center justify-between gap-4">
+      <div className="mb-4 flex items-center justify-between gap-4 flex-wrap">
         <p data-testid="summary-bar" className="text-gray-400">
-          <span className="text-2xl font-bold text-dota-gold">{count}</span>{' '}
+          <span className="text-2xl font-bold text-dota-gold">{count}</span>
+          {onlyNamed && count < total && (
+            <span className="ml-1 text-sm text-gray-600">of {total}</span>
+          )}
+          {' '}
           <span className="text-sm">
             {count === 1 ? 'pro found' : 'pros found'} for account{' '}
             <span className="font-mono text-white">#{data.account_id}</span>
           </span>
         </p>
 
-        <span className="hidden rounded-full border border-dota-border px-3 py-1 text-xs text-gray-600 sm:block">
-          Data by OpenDota
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setOnlyNamed(v => !v)}
+            className={[
+              'flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-all cursor-pointer',
+              onlyNamed
+                ? 'border-dota-gold/50 bg-dota-gold/10 text-dota-gold'
+                : 'border-dota-border text-gray-500 hover:border-dota-gold/30 hover:text-gray-400',
+            ].join(' ')}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${onlyNamed ? 'bg-dota-gold' : 'bg-gray-600'}`} />
+            Named pros only
+          </button>
+
+          <span className="hidden rounded-full border border-dota-border px-3 py-1 text-xs text-gray-600 sm:block">
+            Data by OpenDota
+          </span>
+        </div>
       </div>
 
       {/* Table */}
