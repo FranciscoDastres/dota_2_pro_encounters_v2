@@ -49,18 +49,28 @@ function App() {
             <SearchForm onSearch={search} loading={status === 'loading'} />
           </div>
 
-          <p className="mt-4 text-xs text-gray-600">
-            Don't know your Account ID? Find yourself on{' '}
-            <a
-              href="https://www.opendota.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-500 underline-offset-2 hover:text-dota-gold hover:underline transition-colors"
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <p className="text-xs text-gray-600">
+              Don't know your Account ID? Find yourself on{' '}
+              <a
+                href="https://www.opendota.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-500 underline-offset-2 hover:text-dota-gold hover:underline transition-colors"
+              >
+                opendota.com
+              </a>
+              — it appears in your profile URL.
+            </p>
+
+            <button
+              onClick={() => search('107588898')}
+              disabled={status === 'loading'}
+              className="text-xs text-dota-gold/60 underline-offset-2 hover:text-dota-gold hover:underline transition-colors disabled:pointer-events-none disabled:opacity-40"
             >
-              opendota.com
-            </a>
-            — it appears in your profile URL.
-          </p>
+              or try with an example account
+            </button>
+          </div>
         </div>
       </header>
 
