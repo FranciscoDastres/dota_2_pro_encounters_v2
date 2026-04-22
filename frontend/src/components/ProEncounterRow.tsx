@@ -135,7 +135,7 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
         </td>
 
         {/* Expand toggle */}
-        <td className="whitespace-nowrap px-3 py-3 text-center">
+        <td className="whitespace-nowrap px-4 py-3 text-right">
           <button
             onClick={() => setExpanded((v) => !v)}
             aria-label={expanded ? 'Collapse match history' : 'Show match history'}
