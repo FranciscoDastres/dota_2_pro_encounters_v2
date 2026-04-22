@@ -42,9 +42,11 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
             {pro.name ? (
               <>
                 <span className="font-semibold text-white transition-colors group-hover/name:text-dota-gold-light">
+                  <span className="mr-1 font-mono text-[9px] uppercase tracking-wider text-dota-gold/50">scene</span>
                   {pro.name}
                 </span>
                 <span className="text-xs text-gray-500 transition-colors group-hover/name:text-gray-400">
+                  <span className="mr-1 font-mono text-[9px] uppercase tracking-wider text-gray-700">steam</span>
                   {pro.personaname}
                 </span>
               </>
@@ -57,8 +59,16 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
         </td>
 
         {/* Team */}
-        <td className="px-4 py-3 text-gray-300">
-          {pro.team_name ?? <span className="text-gray-700">—</span>}
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${pro.team_name ? 'bg-dota-radiant' : 'bg-gray-700'}`}
+              title={pro.team_name ? 'Active team' : 'No team'}
+            />
+            <span className={pro.team_name ? 'text-gray-300' : 'text-gray-700'}>
+              {pro.team_name ?? '—'}
+            </span>
+          </div>
         </td>
 
         {/* Last match */}
