@@ -135,12 +135,12 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
         </td>
 
         {/* Expand toggle */}
-        <td className="px-3 py-3 text-center">
+        <td className="whitespace-nowrap px-3 py-3 text-center">
           <button
             onClick={() => setExpanded((v) => !v)}
             aria-label={expanded ? 'Collapse match history' : 'Show match history'}
             className={[
-              'cursor-pointer rounded-md border px-2 py-1 text-[11px] font-medium transition-all',
+              'cursor-pointer rounded-md border px-3 py-1 text-[11px] font-medium transition-all whitespace-nowrap',
               expanded
                 ? 'border-dota-gold/50 bg-dota-gold/10 text-dota-gold'
                 : 'border-dota-border text-gray-600 hover:border-dota-gold/40 hover:text-dota-gold',
