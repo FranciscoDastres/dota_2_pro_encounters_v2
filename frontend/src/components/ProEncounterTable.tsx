@@ -26,7 +26,7 @@ const HEADERS: Header[] = [
   { key: 'losses',     label: 'L',           sortKey: 'losses',          align: 'center' },
   { key: 'winrate',    label: 'Win%',        sortKey: 'winrate',         align: 'center' },
   { key: 'country',    label: 'Country',     sortKey: null,              align: 'center' },
-  { key: 'expand',     label: '',            sortKey: null },
+  { key: 'expand',     label: '',            sortKey: null,              align: 'center' },
 ]
 
 function sortPros(pros: ProEncounter[], key: SortKey, dir: SortDir): ProEncounter[] {
@@ -134,6 +134,7 @@ export function ProEncounterTable({ data }: Props) {
                     'px-4 py-3 text-xs font-medium uppercase tracking-widest text-gray-500 whitespace-nowrap',
                     align === 'center' ? 'text-center' : 'text-left',
                     sk ? 'cursor-pointer select-none hover:text-gray-300 transition-colors' : '',
+                    key === 'expand' ? 'w-px' : '',
                   ].join(' ')}
                   onClick={sk ? () => handleSort(sk) : undefined}
                 >
