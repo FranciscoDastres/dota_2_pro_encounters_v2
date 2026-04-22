@@ -75,7 +75,7 @@ function App() {
       </header>
 
       {/* ── Results ──────────────────────────────────────── */}
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-12">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-12">
         {status === 'loading' && <LoadingSpinner />}
 
         {status === 'error' && error && (
