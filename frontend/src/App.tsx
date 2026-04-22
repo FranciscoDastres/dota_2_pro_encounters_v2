@@ -8,6 +8,7 @@ import { ProEncounterTable } from './components/ProEncounterTable'
 import { Footer } from './components/Footer'
 import { KofiWidget } from './components/KofiWidget'
 import { OfflineBanner } from './components/OfflineBanner'
+import { HeroBackground } from './components/HeroBackground'
 
 function App() {
   const { data, status, error, search, reset } = useProEncounters()
@@ -19,6 +20,9 @@ function App() {
 
       {/* ── Hero ─────────────────────────────────────────── */}
       <header className="relative overflow-hidden py-20 px-4 text-center">
+        {/* Hero lineup background */}
+        <HeroBackground />
+
         {/* Background glow */}
         <div className="pointer-events-none absolute -top-32 left-1/2 h-72 w-[640px] -translate-x-1/2 rounded-full bg-dota-gold/8 blur-[100px] animate-glow" />
         <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-dota-border to-transparent" />
