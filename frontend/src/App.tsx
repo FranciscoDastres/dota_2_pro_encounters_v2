@@ -13,6 +13,7 @@ import { HeroBackground } from './components/HeroBackground'
 function App() {
   const { data, status, error, search, reset } = useProEncounters()
   const isOnline = useOnlineStatus()
+  const initialAccountId = new URLSearchParams(window.location.search).get('account') ?? ''
 
   return (
     <div className="min-h-screen bg-dota-dark text-white flex flex-col">
@@ -46,7 +47,7 @@ function App() {
           </p>
 
           <div className="flex justify-center">
-            <SearchForm onSearch={search} loading={status === 'loading'} />
+            <SearchForm onSearch={search} loading={status === 'loading'} initialValue={initialAccountId} />
           </div>
 
           <div className="mt-4 flex flex-col items-center gap-2">
