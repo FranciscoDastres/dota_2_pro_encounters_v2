@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useSharedMatches } from '../hooks/useSharedMatches'
+import { useHeroes, heroIconUrl } from '../hooks/useHeroes'
 import type { SharedMatch, MatchFilter } from '../types'
 
 interface Props {
@@ -36,6 +37,7 @@ const TABS: { key: MatchFilter; label: string }[] = [
 export function MatchHistory({ accountId, proAccountId }: Props) {
   const { data, status, error, load, activeFilter, changeFilter, cache } =
     useSharedMatches(accountId, proAccountId)
+  const heroMap = useHeroes()
 
   useEffect(() => {
     load()
@@ -91,6 +93,7 @@ export function MatchHistory({ accountId, proAccountId }: Props) {
           <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {data.map((match) => {
               const won = isWin(match)
+              const hero = heroMap[match.hero_id]
               return (
                 <a
                   key={match.match_id}
@@ -98,25 +101,36 @@ export function MatchHistory({ accountId, proAccountId }: Props) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={[
-                    'flex items-center justify-between rounded-lg border px-3 py-2 text-xs',
+                    'flex items-center gap-2 rounded-lg border px-3 py-2 text-xs',
                     'transition-all duration-150 hover:scale-[1.01]',
                     won
                       ? 'border-dota-radiant/25 bg-dota-radiant/5 hover:border-dota-radiant/50 hover:bg-dota-radiant/10'
                       : 'border-dota-dire/25 bg-dota-dire/5 hover:border-dota-dire/50 hover:bg-dota-dire/10',
                   ].join(' ')}
                 >
-                  {/* Left: ID + date */}
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-[11px] text-gray-400">
-                      #{match.match_id}
+                  {/* Hero portrait */}
+                  {hero ? (
+                    <img
+                      src={heroIconUrl(hero)}
+                      alt={hero.localized_name}
+                      className="h-8 w-8 flex-shrink-0 rounded"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 flex-shrink-0 rounded bg-dota-border/50 animate-pulse" />
+                  )}
+
+                  {/* Hero name + match ID + date */}
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                    <span className="text-[11px] font-medium text-gray-300 truncate">
+                      {hero?.localized_name ?? '—'}
                     </span>
-                    <span className="text-[10px] text-gray-600">
-                      {formatMatchDate(match.start_time)}
+                    <span className="font-mono text-[10px] text-gray-600">
+                      #{match.match_id} · {formatMatchDate(match.start_time)}
                     </span>
                   </div>
 
-                  {/* Right: result + stats */}
-                  <div className="flex flex-col items-end gap-0.5">
+                  {/* Result + stats */}
+                  <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                     <span
                       className={`text-[11px] font-bold ${
                         won ? 'text-dota-radiant' : 'text-dota-dire'
