@@ -3,10 +3,11 @@ import { useState, type FormEvent } from 'react'
 interface SearchFormProps {
   onSearch: (accountId: string) => void
   loading: boolean
+  initialValue?: string
 }
 
-export function SearchForm({ onSearch, loading }: SearchFormProps) {
-  const [value, setValue] = useState('')
+export function SearchForm({ onSearch, loading, initialValue = '' }: SearchFormProps) {
+  const [value, setValue] = useState(initialValue)
   const [validationError, setValidationError] = useState('')
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
