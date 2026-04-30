@@ -68,8 +68,10 @@ function saveProfileCache(accountId: number, data: PlayerProfileData) {
   } catch { /* ignore quota errors */ }
 }
 
-async function get<T>(url: string): Promise<T> {
-  const res = await fetch(url)
+const TIMEOUT_MS = 10_000
+
+async function get<T>(url: string, signal: AbortSignal): Promise<T> {
+  const res = await fetch(url, { signal })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json() as Promise<T>
 }
@@ -84,17 +86,26 @@ export function usePlayerProfile(accountId: number | null) {
     const cached = loadProfileCache(accountId)
     if (cached) { setData(cached); return }
 
-    let cancelled = false
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
     setLoading(true)
     setData(null)
 
-    Promise.all([
-      get<OpenDotaPlayerResponse>(`${OPENDOTA}/players/${accountId}`),
-      get<HeroStat[]>(`${OPENDOTA}/players/${accountId}/heroes`),
-      get<RecentMatch[]>(`${OPENDOTA}/players/${accountId}/recentMatches`),
+    Promise.allSettled([
+      get<OpenDotaPlayerResponse>(`${OPENDOTA}/players/${accountId}`, controller.signal),
+      get<HeroStat[]>(`${OPENDOTA}/players/${accountId}/heroes`, controller.signal),
+      get<RecentMatch[]>(`${OPENDOTA}/players/${accountId}/recentMatches`, controller.signal),
     ])
-      .then(([player, heroStats, recentMatches]) => {
-        if (cancelled || !player.profile) return
+      .then(([playerRes, heroRes, recentRes]) => {
+        if (controller.signal.aborted) return
+
+        // Profile is required — bail if it failed
+        if (playerRes.status === 'rejected' || !playerRes.value.profile) return
+
+        const player = playerRes.value
+        const heroStats: HeroStat[] = heroRes.status === 'fulfilled' ? heroRes.value : []
+        const recentMatches: RecentMatch[] = recentRes.status === 'fulfilled' ? recentRes.value : []
 
         const sorted = [...heroStats].sort((a, b) => b.games - a.games)
         const mostPlayed = sorted[0] ?? null
@@ -109,11 +120,11 @@ export function usePlayerProfile(accountId: number | null) {
         const totalWins  = heroStats.reduce((s, h) => s + h.win, 0)
 
         const profile: PlayerProfileData = {
-          personaname:           player.profile.personaname,
-          avatarfull:            player.profile.avatarfull,
-          profileurl:            player.profile.profileurl,
+          personaname:           player.profile!.personaname,
+          avatarfull:            player.profile!.avatarfull,
+          profileurl:            player.profile!.profileurl,
           rankTier:              player.rank_tier,
-          countryCode:           player.profile.loccountrycode,
+          countryCode:           player.profile!.loccountrycode,
           totalGames,
           totalWins,
           mostPlayedHeroId:      mostPlayed?.hero_id ?? null,
@@ -127,10 +138,15 @@ export function usePlayerProfile(accountId: number | null) {
         saveProfileCache(accountId, profile)
         setData(profile)
       })
-      .catch(() => { /* profile is decorative — fail silently */ })
-      .finally(() => { if (!cancelled) setLoading(false) })
+      .finally(() => {
+        clearTimeout(timer)
+        setLoading(false)
+      })
 
-    return () => { cancelled = true }
+    return () => {
+      controller.abort()
+      clearTimeout(timer)
+    }
   }, [accountId])
 
   return { data, loading }
