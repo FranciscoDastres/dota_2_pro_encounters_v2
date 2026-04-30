@@ -1,5 +1,7 @@
+import { useCallback, useEffect } from 'react'
 import { useProEncounters } from './hooks/useProEncounters'
 import { useOnlineStatus } from './hooks/useOnlineStatus'
+import { useSearchHistory } from './hooks/useSearchHistory'
 import { SearchForm } from './components/SearchForm'
 import { LoadingSpinner } from './components/LoadingSpinner'
 import { ErrorMessage } from './components/ErrorMessage'
@@ -13,7 +15,18 @@ import { HeroBackground } from './components/HeroBackground'
 function App() {
   const { data, status, error, search, reset } = useProEncounters()
   const isOnline = useOnlineStatus()
+  const { history, add: addToHistory, remove: removeFromHistory } = useSearchHistory()
   const initialAccountId = new URLSearchParams(window.location.search).get('account') ?? ''
+
+  useEffect(() => {
+    if (initialAccountId) addToHistory(initialAccountId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleSearch = useCallback((accountId: string) => {
+    addToHistory(accountId)
+    search(accountId)
+  }, [addToHistory, search])
 
   return (
     <div className="min-h-screen bg-dota-dark text-white flex flex-col">
@@ -47,7 +60,7 @@ function App() {
           </p>
 
           <div className="flex justify-center">
-            <SearchForm onSearch={search} loading={status === 'loading'} initialValue={initialAccountId} />
+            <SearchForm onSearch={handleSearch} loading={status === 'loading'} initialValue={initialAccountId} />
           </div>
 
           <div className="mt-4 flex flex-col items-center gap-2">
@@ -65,12 +78,39 @@ function App() {
             </p>
 
             <button
-              onClick={() => search('107588898')}
+              onClick={() => handleSearch('107588898')}
               disabled={status === 'loading'}
               className="text-xs text-dota-gold/60 underline-offset-2 hover:text-dota-gold hover:underline transition-colors disabled:pointer-events-none disabled:opacity-40"
             >
               or try with an example account
             </button>
+
+            {history.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap justify-center">
+                <span className="text-xs text-gray-700">Recent:</span>
+                {history.map(id => (
+                  <div
+                    key={id}
+                    className="flex items-center gap-1 rounded-full border border-dota-border px-2.5 py-0.5 text-xs transition-all hover:border-dota-gold/40"
+                  >
+                    <button
+                      onClick={() => handleSearch(id)}
+                      disabled={status === 'loading'}
+                      className="font-mono text-gray-500 hover:text-dota-gold transition-colors disabled:pointer-events-none disabled:opacity-40"
+                    >
+                      {id}
+                    </button>
+                    <button
+                      onClick={() => removeFromHistory(id)}
+                      aria-label={`Remove ${id} from history`}
+                      className="text-gray-700 hover:text-red-400 transition-colors leading-none"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </header>
