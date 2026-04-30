@@ -75,9 +75,12 @@ export function MatchHistory({ accountId, proAccountId }: Props) {
 
       {/* Content */}
       {status === 'loading' || status === 'idle' ? (
-        <div className="flex items-center justify-center gap-2 py-4 text-sm text-gray-500">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-dota-border border-t-dota-gold" />
-          Loading matches…
+        <div className="flex flex-col items-center justify-center gap-1.5 py-4">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-dota-border border-t-dota-gold" />
+            Loading matches…
+          </div>
+          <span className="text-[11px] text-gray-700">OpenDota can take up to 15s on first load</span>
         </div>
       ) : status === 'error' ? (
         <p className="py-3 text-center text-sm text-dota-red/80">{error}</p>
@@ -114,9 +117,10 @@ export function MatchHistory({ accountId, proAccountId }: Props) {
                       src={heroIconUrl(hero)}
                       alt={hero.localized_name}
                       className="h-8 w-8 flex-shrink-0 rounded"
+                      onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
                     />
                   ) : (
-                    <div className="h-8 w-8 flex-shrink-0 rounded bg-dota-border/50 animate-pulse" />
+                    <div className="h-8 w-8 flex-shrink-0 rounded bg-dota-border/50" />
                   )}
 
                   {/* Hero name + match ID + date */}
