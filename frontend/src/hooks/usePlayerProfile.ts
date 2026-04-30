@@ -30,6 +30,13 @@ export interface RecentMatch {
   assists: number
 }
 
+export interface TopHero {
+  heroId: number
+  games: number
+  wins: number
+  winRate: number
+}
+
 export interface PlayerProfileData {
   personaname: string
   avatarfull: string
@@ -38,12 +45,7 @@ export interface PlayerProfileData {
   countryCode: string | null
   totalGames: number
   totalWins: number
-  mostPlayedHeroId: number | null
-  mostPlayedHeroGames: number
-  mostPlayedHeroWinRate: number
-  bestHeroId: number | null
-  bestHeroWinRate: number
-  bestHeroGames: number
+  topHeroes: TopHero[]
   lastMatch: RecentMatch | null
 }
 
@@ -102,33 +104,25 @@ export function usePlayerProfile(accountId: number | null) {
       const heroStats: HeroStat[] = heroRes.status === 'fulfilled' ? heroRes.value : []
       const recentMatches: RecentMatch[] = recentRes.status === 'fulfilled' ? recentRes.value : []
 
-      const sorted = [...heroStats].sort((a, b) => b.games - a.games)
-      const mostPlayed = sorted[0] ?? null
-
-      const eligible = heroStats.filter(h => h.games >= 10)
-      const bestHero = eligible.reduce<HeroStat | null>((best, h) => {
-        const wr = h.win / h.games
-        return !best || wr > best.win / best.games ? h : best
-      }, null)
+      const topHeroes: TopHero[] = heroStats
+        .filter(h => h.games >= 10)
+        .sort((a, b) => (b.win / b.games) - (a.win / a.games))
+        .slice(0, 3)
+        .map(h => ({ heroId: h.hero_id, games: h.games, wins: h.win, winRate: h.win / h.games }))
 
       const totalGames = heroStats.reduce((s, h) => s + h.games, 0)
       const totalWins  = heroStats.reduce((s, h) => s + h.win, 0)
 
       const profile: PlayerProfileData = {
-        personaname:           player.profile.personaname,
-        avatarfull:            player.profile.avatarfull,
-        profileurl:            player.profile.profileurl,
-        rankTier:              player.rank_tier,
-        countryCode:           player.profile.loccountrycode,
+        personaname:  player.profile.personaname,
+        avatarfull:   player.profile.avatarfull,
+        profileurl:   player.profile.profileurl,
+        rankTier:     player.rank_tier,
+        countryCode:  player.profile.loccountrycode,
         totalGames,
         totalWins,
-        mostPlayedHeroId:      mostPlayed?.hero_id ?? null,
-        mostPlayedHeroGames:   mostPlayed?.games ?? 0,
-        mostPlayedHeroWinRate: mostPlayed ? mostPlayed.win / mostPlayed.games : 0,
-        bestHeroId:            bestHero?.hero_id ?? null,
-        bestHeroWinRate:       bestHero ? bestHero.win / bestHero.games : 0,
-        bestHeroGames:         bestHero?.games ?? 0,
-        lastMatch:             recentMatches[0] ?? null,
+        topHeroes,
+        lastMatch:    recentMatches[0] ?? null,
       }
       saveProfileCache(accountId, profile)
       setData(profile)
