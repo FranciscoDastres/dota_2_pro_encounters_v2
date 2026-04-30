@@ -128,7 +128,7 @@ export function PlayerProfile({ accountId }: Props) {
 
         {/* Top 3 heroes by win rate */}
         <div className="px-5 py-4">
-          <p className="mb-3 text-[10px] uppercase tracking-wider text-gray-600">Top Win Rate</p>
+          <p className="mb-3 text-[10px] uppercase tracking-wider text-gray-600">Most Played</p>
           {data.topHeroes.length === 0 ? (
             <p className="text-xs text-gray-700">Not enough data (min. 10 games per hero)</p>
           ) : (
