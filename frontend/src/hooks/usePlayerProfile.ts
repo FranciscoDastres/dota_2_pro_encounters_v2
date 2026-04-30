@@ -106,7 +106,7 @@ export function usePlayerProfile(accountId: number | null) {
 
       const topHeroes: TopHero[] = heroStats
         .filter(h => h.games >= 10)
-        .sort((a, b) => (b.win / b.games) - (a.win / a.games))
+        .sort((a, b) => b.games - a.games)
         .slice(0, 3)
         .map(h => ({ heroId: h.hero_id, games: h.games, wins: h.win, winRate: h.win / h.games }))
 
