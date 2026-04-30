@@ -7,6 +7,7 @@ import { LoadingSpinner } from './components/LoadingSpinner'
 import { ErrorMessage } from './components/ErrorMessage'
 import { EmptyState } from './components/EmptyState'
 import { ProEncounterTable } from './components/ProEncounterTable'
+import { PlayerProfile } from './components/PlayerProfile'
 import { Footer } from './components/Footer'
 import { KofiWidget } from './components/KofiWidget'
 import { OfflineBanner } from './components/OfflineBanner'
@@ -123,13 +124,14 @@ function App() {
           <ErrorMessage message={error} onRetry={reset} />
         )}
 
-        {status === 'success' && data && data.pros.length === 0 && (
-          <EmptyState accountId={data.account_id} />
-        )}
-
-        {status === 'success' && data && data.pros.length > 0 && (
+        {status === 'success' && data && (
           <div className="animate-fade-up">
-            <ProEncounterTable data={data} />
+            <PlayerProfile accountId={data.account_id} />
+
+            {data.pros.length === 0
+              ? <EmptyState accountId={data.account_id} />
+              : <ProEncounterTable data={data} />
+            }
           </div>
         )}
       </main>
