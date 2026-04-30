@@ -1,16 +1,16 @@
 import { supabase } from './supabase.service'
 import { getPlayerPros } from './openDota.service'
+import { logger } from '../config/logger'
 import type { OpenDotaProEncounter } from '../types'
 
-/** Cache TTL: 1 hour */
-const CACHE_TTL_MS = 60 * 60 * 1000
+const CACHE_TTL_MS = 60 * 60 * 1000 // 1 hour
 
-/**
- * Returns pro encounters for a given account, reading from Supabase
- * match_cache when available (and fresh). Falls back to live OpenDota
- * call when the cache entry is stale or missing.
- */
+// In-memory layer to skip Supabase on hot queries within the same process
+const memCache = new Map<number, { pros: OpenDotaProEncounter[]; ts: number }>()
+
 export async function getPlayerProsWithCache(accountId: number): Promise<OpenDotaProEncounter[]> {
+  const mem = memCache.get(accountId)
+  if (mem && Date.now() - mem.ts < CACHE_TTL_MS) return mem.pros
 
   const { data: cached } = await supabase
     .from('match_cache')
@@ -21,18 +21,23 @@ export async function getPlayerProsWithCache(accountId: number): Promise<OpenDot
   if (cached) {
     const age = Date.now() - new Date(cached.cached_at as string).getTime()
     if (age < CACHE_TTL_MS) {
-      return cached.pros as OpenDotaProEncounter[]
+      const pros = cached.pros as OpenDotaProEncounter[]
+      memCache.set(accountId, { pros, ts: Date.now() - age })
+      return pros
     }
   }
 
   const pros = await getPlayerPros(accountId)
+  memCache.set(accountId, { pros, ts: Date.now() })
 
-  await supabase
+  // fire-and-forget: don't block the response waiting for the write
+  supabase
     .from('match_cache')
     .upsert(
       { steam_id: accountId, pros, cached_at: new Date().toISOString() },
       { onConflict: 'steam_id' },
     )
+    .then(({ error }) => { if (error) logger.warn('cache upsert failed', { error }) })
 
   return pros
 }
