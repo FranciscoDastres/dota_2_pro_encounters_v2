@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 
 interface Hero {
   id: number
+  name: string          // "npc_dota_hero_antimage"
   localized_name: string
-  icon: string // e.g. "/apps/dota2/images/dota_react/heroes/icons/antimage.png"
 }
 
 export type HeroMap = Record<number, Hero>
@@ -51,7 +51,8 @@ function getHeroes(): Promise<HeroMap> {
 }
 
 export function heroIconUrl(hero: Hero): string {
-  return STEAM_CDN + hero.icon
+  const shortName = hero.name.replace('npc_dota_hero_', '')
+  return `${STEAM_CDN}/apps/dota2/images/dota_react/heroes/icons/${shortName}.png`
 }
 
 export function useHeroes(): HeroMap {
