@@ -31,7 +31,7 @@ function getHeroes(): Promise<HeroMap> {
   if (cached) return Promise.resolve(cached)
   if (inflight) return inflight
 
-  inflight = fetch('https://api.opendota.com/api/heroes')
+  inflight = fetch('https://api.opendota.com/api/heroes', { signal: AbortSignal.timeout(8000) })
     .then(r => r.json() as Promise<Hero[]>)
     .then(heroes => {
       const map: HeroMap = {}

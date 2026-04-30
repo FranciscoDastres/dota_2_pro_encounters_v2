@@ -106,23 +106,23 @@ export function usePlayerProfile(accountId: number | null) {
 
       const topHeroes: TopHero[] = heroStats
         .filter(h => h.games >= 10)
-        .sort((a, b) => b.games - a.games)
+        .sort((a, b) => (b.win / b.games) - (a.win / a.games))
         .slice(0, 3)
         .map(h => ({ heroId: h.hero_id, games: h.games, wins: h.win, winRate: h.win / h.games }))
 
       const totalGames = heroStats.reduce((s, h) => s + h.games, 0)
-      const totalWins  = heroStats.reduce((s, h) => s + h.win, 0)
+      const totalWins = heroStats.reduce((s, h) => s + h.win, 0)
 
       const profile: PlayerProfileData = {
-        personaname:  player.profile.personaname,
-        avatarfull:   player.profile.avatarfull,
-        profileurl:   player.profile.profileurl,
-        rankTier:     player.rank_tier,
-        countryCode:  player.profile.loccountrycode,
+        personaname: player.profile.personaname,
+        avatarfull: player.profile.avatarfull,
+        profileurl: player.profile.profileurl,
+        rankTier: player.rank_tier,
+        countryCode: player.profile.loccountrycode,
         totalGames,
         totalWins,
         topHeroes,
-        lastMatch:    recentMatches[0] ?? null,
+        lastMatch: recentMatches[0] ?? null,
       }
       saveProfileCache(accountId, profile)
       setData(profile)
