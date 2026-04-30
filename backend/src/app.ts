@@ -10,6 +10,10 @@ import apiRouter from './routes'
 
 const app = express()
 
+// Render (and most PaaS) sit behind a reverse proxy — trust the first hop
+// so express-rate-limit can read the real client IP from X-Forwarded-For
+app.set('trust proxy', 1)
+
 app.use(
   helmet({
     // Pure REST API — block all content sources and framing
