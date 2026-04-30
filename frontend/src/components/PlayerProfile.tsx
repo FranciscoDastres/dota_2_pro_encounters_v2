@@ -1,4 +1,5 @@
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
+import type { TopHero } from '../hooks/usePlayerProfile'
 import { useHeroes, heroIconUrl } from '../hooks/useHeroes'
 import { countryCodeToFlag } from '../utils/formatters'
 
@@ -31,40 +32,18 @@ function isWin(slot: number, radiantWin: boolean): boolean {
   return slot < 128 ? radiantWin : !radiantWin
 }
 
-interface HeroTileProps {
-  label: string
-  heroId: number | null
-  heroMap: ReturnType<typeof useHeroes>
-  sub1: string
-  sub2: string
-  win?: boolean
-}
-
-function HeroTile({ label, heroId, heroMap, sub1, sub2, win }: HeroTileProps) {
+function HeroIcon({ heroId, heroMap, size = 8 }: { heroId: number | null; heroMap: ReturnType<typeof useHeroes>; size?: number }) {
   const hero = heroId ? heroMap[heroId] : null
-  return (
-    <div className="flex items-center gap-3">
-      {hero ? (
-        <img
-          src={heroIconUrl(hero)}
-          alt={hero.localized_name}
-          className="h-10 w-10 flex-shrink-0 rounded-lg ring-1 ring-dota-border"
-          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-        />
-      ) : (
-        <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-dota-border/40" />
-      )}
-      <div className="min-w-0">
-        <p className="text-[10px] uppercase tracking-wider text-gray-600">{label}</p>
-        <p className="truncate text-sm font-semibold text-white">{hero?.localized_name ?? '—'}</p>
-        <p className="text-[11px] text-gray-500">{sub1}</p>
-        {sub2 && (
-          <p className={`text-[11px] font-mono font-bold ${win === true ? 'text-dota-radiant' : win === false ? 'text-dota-dire' : 'text-gray-400'}`}>
-            {sub2}
-          </p>
-        )}
-      </div>
-    </div>
+  const cls = `h-${size} w-${size} flex-shrink-0 rounded`
+  return hero ? (
+    <img
+      src={heroIconUrl(hero)}
+      alt={hero.localized_name}
+      className={cls + ' ring-1 ring-dota-border'}
+      onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+    />
+  ) : (
+    <div className={cls + ' bg-dota-border/40'} />
   )
 }
 
@@ -93,10 +72,12 @@ export function PlayerProfile({ accountId }: Props) {
 
   const lastMatch = data.lastMatch
   const lastMatchWon = lastMatch ? isWin(lastMatch.player_slot, lastMatch.radiant_win) : undefined
+  const lastMatchHero = lastMatch ? heroMap[lastMatch.hero_id] : null
 
   return (
     <div className="mb-6 rounded-xl border border-dota-border bg-dota-surface">
-      {/* Top row: avatar + identity + global stats */}
+
+      {/* Top: avatar + identity */}
       <div className="flex flex-wrap items-center gap-4 px-5 py-4">
         <a href={data.profileurl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
           <img
@@ -140,45 +121,71 @@ export function PlayerProfile({ accountId }: Props) {
         </div>
       </div>
 
-      {/* Divider */}
       <div className="h-px bg-dota-border/60" />
 
-      {/* Bottom row: 3 hero tiles */}
-      <div className="grid grid-cols-1 gap-4 px-5 py-4 sm:grid-cols-3">
-        <HeroTile
-          label="Most Played"
-          heroId={data.mostPlayedHeroId}
-          heroMap={heroMap}
-          sub1={`${data.mostPlayedHeroGames} games`}
-          sub2={`${Math.round(data.mostPlayedHeroWinRate * 100)}% WR`}
-        />
+      {/* Bottom: top heroes + last match */}
+      <div className="grid grid-cols-1 gap-0 sm:grid-cols-2">
 
-        <HeroTile
-          label="Best Win Rate"
-          heroId={data.bestHeroId}
-          heroMap={heroMap}
-          sub1={`${data.bestHeroGames} games`}
-          sub2={`${Math.round(data.bestHeroWinRate * 100)}% WR`}
-        />
+        {/* Top 3 heroes by win rate */}
+        <div className="px-5 py-4">
+          <p className="mb-3 text-[10px] uppercase tracking-wider text-gray-600">Top Win Rate</p>
+          {data.topHeroes.length === 0 ? (
+            <p className="text-xs text-gray-700">Not enough data (min. 10 games per hero)</p>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {data.topHeroes.map((th: TopHero, i) => {
+                const hero = heroMap[th.heroId]
+                return (
+                  <div key={th.heroId} className="flex items-center gap-3">
+                    <span className="w-4 text-[11px] font-mono text-gray-700 flex-shrink-0">{i + 1}</span>
+                    <HeroIcon heroId={th.heroId} heroMap={heroMap} size={8} />
+                    <span className="flex-1 truncate text-sm text-white">{hero?.localized_name ?? '—'}</span>
+                    <span className="text-xs font-mono text-dota-radiant">{Math.round(th.winRate * 100)}%</span>
+                    <span className="text-[11px] text-gray-600">{th.games}g</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
 
-        {lastMatch ? (
-          <HeroTile
-            label="Last Match"
-            heroId={lastMatch.hero_id}
-            heroMap={heroMap}
-            sub1={timeAgo(lastMatch.start_time)}
-            sub2={lastMatchWon ? 'WIN' : 'LOSS'}
-            win={lastMatchWon}
-          />
-        ) : (
-          <HeroTile
-            label="Last Match"
-            heroId={null}
-            heroMap={heroMap}
-            sub1="—"
-            sub2=""
-          />
-        )}
+        {/* Divider vertical on sm+ */}
+        <div className="hidden sm:block absolute" />
+
+        {/* Last match */}
+        <div className="border-t border-dota-border/60 px-5 py-4 sm:border-t-0 sm:border-l">
+          <p className="mb-3 text-[10px] uppercase tracking-wider text-gray-600">Last Match</p>
+          {lastMatch ? (
+            <a
+              href={`https://www.opendota.com/matches/${lastMatch.match_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={[
+                'flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-all hover:scale-[1.01]',
+                lastMatchWon
+                  ? 'border-dota-radiant/25 bg-dota-radiant/5 hover:border-dota-radiant/50'
+                  : 'border-dota-dire/25 bg-dota-dire/5 hover:border-dota-dire/50',
+              ].join(' ')}
+            >
+              <HeroIcon heroId={lastMatch.hero_id} heroMap={heroMap} size={10} />
+              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                <span className="text-sm font-semibold text-white truncate">
+                  {lastMatchHero?.localized_name ?? '—'}
+                </span>
+                <span className="font-mono text-[11px] text-gray-500">
+                  #{lastMatch.match_id}
+                </span>
+                <span className="text-[11px] text-gray-600">{timeAgo(lastMatch.start_time)}</span>
+              </div>
+              <span className={`text-sm font-bold flex-shrink-0 ${lastMatchWon ? 'text-dota-radiant' : 'text-dota-dire'}`}>
+                {lastMatchWon ? 'WIN' : 'LOSS'}
+              </span>
+            </a>
+          ) : (
+            <p className="text-xs text-gray-700">No recent matches found</p>
+          )}
+        </div>
+
       </div>
     </div>
   )
