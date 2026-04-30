@@ -48,6 +48,25 @@ export interface PlayerProfileData {
 }
 
 const OPENDOTA = 'https://api.opendota.com/api'
+const CACHE_PREFIX = 'dota2_profile_v1_'
+const CACHE_TTL = 30 * 60 * 1000 // 30 min
+
+function loadProfileCache(accountId: number): PlayerProfileData | null {
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + accountId)
+    if (!raw) return null
+    const { data, ts } = JSON.parse(raw) as { data: PlayerProfileData; ts: number }
+    return Date.now() - ts < CACHE_TTL ? data : null
+  } catch {
+    return null
+  }
+}
+
+function saveProfileCache(accountId: number, data: PlayerProfileData) {
+  try {
+    localStorage.setItem(CACHE_PREFIX + accountId, JSON.stringify({ data, ts: Date.now() }))
+  } catch { /* ignore quota errors */ }
+}
 
 async function get<T>(url: string): Promise<T> {
   const res = await fetch(url)
@@ -61,6 +80,9 @@ export function usePlayerProfile(accountId: number | null) {
 
   useEffect(() => {
     if (!accountId) { setData(null); return }
+
+    const cached = loadProfileCache(accountId)
+    if (cached) { setData(cached); return }
 
     let cancelled = false
     setLoading(true)
@@ -86,22 +108,24 @@ export function usePlayerProfile(accountId: number | null) {
         const totalGames = heroStats.reduce((s, h) => s + h.games, 0)
         const totalWins  = heroStats.reduce((s, h) => s + h.win, 0)
 
-        setData({
-          personaname:          player.profile.personaname,
-          avatarfull:           player.profile.avatarfull,
-          profileurl:           player.profile.profileurl,
-          rankTier:             player.rank_tier,
-          countryCode:          player.profile.loccountrycode,
+        const profile: PlayerProfileData = {
+          personaname:           player.profile.personaname,
+          avatarfull:            player.profile.avatarfull,
+          profileurl:            player.profile.profileurl,
+          rankTier:              player.rank_tier,
+          countryCode:           player.profile.loccountrycode,
           totalGames,
           totalWins,
-          mostPlayedHeroId:     mostPlayed?.hero_id ?? null,
-          mostPlayedHeroGames:  mostPlayed?.games ?? 0,
+          mostPlayedHeroId:      mostPlayed?.hero_id ?? null,
+          mostPlayedHeroGames:   mostPlayed?.games ?? 0,
           mostPlayedHeroWinRate: mostPlayed ? mostPlayed.win / mostPlayed.games : 0,
-          bestHeroId:           bestHero?.hero_id ?? null,
-          bestHeroWinRate:      bestHero ? bestHero.win / bestHero.games : 0,
-          bestHeroGames:        bestHero?.games ?? 0,
-          lastMatch:            recentMatches[0] ?? null,
-        })
+          bestHeroId:            bestHero?.hero_id ?? null,
+          bestHeroWinRate:       bestHero ? bestHero.win / bestHero.games : 0,
+          bestHeroGames:         bestHero?.games ?? 0,
+          lastMatch:             recentMatches[0] ?? null,
+        }
+        saveProfileCache(accountId, profile)
+        setData(profile)
       })
       .catch(() => { /* profile is decorative — fail silently */ })
       .finally(() => { if (!cancelled) setLoading(false) })
