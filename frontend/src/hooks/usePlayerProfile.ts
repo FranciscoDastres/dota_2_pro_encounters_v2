@@ -68,10 +68,8 @@ function saveProfileCache(accountId: number, data: PlayerProfileData) {
   } catch { /* ignore quota errors */ }
 }
 
-const TIMEOUT_MS = 10_000
-
-async function get<T>(url: string, signal: AbortSignal): Promise<T> {
-  const res = await fetch(url, { signal })
+async function get<T>(url: string): Promise<T> {
+  const res = await fetch(url)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json() as Promise<T>
 }
@@ -86,67 +84,59 @@ export function usePlayerProfile(accountId: number | null) {
     const cached = loadProfileCache(accountId)
     if (cached) { setData(cached); return }
 
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
-
+    let cancelled = false
     setLoading(true)
     setData(null)
 
     Promise.allSettled([
-      get<OpenDotaPlayerResponse>(`${OPENDOTA}/players/${accountId}`, controller.signal),
-      get<HeroStat[]>(`${OPENDOTA}/players/${accountId}/heroes`, controller.signal),
-      get<RecentMatch[]>(`${OPENDOTA}/players/${accountId}/recentMatches`, controller.signal),
-    ])
-      .then(([playerRes, heroRes, recentRes]) => {
-        if (controller.signal.aborted) return
+      get<OpenDotaPlayerResponse>(`${OPENDOTA}/players/${accountId}`),
+      get<HeroStat[]>(`${OPENDOTA}/players/${accountId}/heroes`),
+      get<RecentMatch[]>(`${OPENDOTA}/players/${accountId}/recentMatches`),
+    ]).then(([playerRes, heroRes, recentRes]) => {
+      if (cancelled) return
 
-        // Profile is required — bail if it failed
-        if (playerRes.status === 'rejected' || !playerRes.value.profile) return
+      if (playerRes.status === 'rejected') return
+      const player = playerRes.value
+      if (!player.profile) return
 
-        const player = playerRes.value
-        const heroStats: HeroStat[] = heroRes.status === 'fulfilled' ? heroRes.value : []
-        const recentMatches: RecentMatch[] = recentRes.status === 'fulfilled' ? recentRes.value : []
+      const heroStats: HeroStat[] = heroRes.status === 'fulfilled' ? heroRes.value : []
+      const recentMatches: RecentMatch[] = recentRes.status === 'fulfilled' ? recentRes.value : []
 
-        const sorted = [...heroStats].sort((a, b) => b.games - a.games)
-        const mostPlayed = sorted[0] ?? null
+      const sorted = [...heroStats].sort((a, b) => b.games - a.games)
+      const mostPlayed = sorted[0] ?? null
 
-        const eligible = heroStats.filter(h => h.games >= 10)
-        const bestHero = eligible.reduce<HeroStat | null>((best, h) => {
-          const wr = h.win / h.games
-          return !best || wr > best.win / best.games ? h : best
-        }, null)
+      const eligible = heroStats.filter(h => h.games >= 10)
+      const bestHero = eligible.reduce<HeroStat | null>((best, h) => {
+        const wr = h.win / h.games
+        return !best || wr > best.win / best.games ? h : best
+      }, null)
 
-        const totalGames = heroStats.reduce((s, h) => s + h.games, 0)
-        const totalWins  = heroStats.reduce((s, h) => s + h.win, 0)
+      const totalGames = heroStats.reduce((s, h) => s + h.games, 0)
+      const totalWins  = heroStats.reduce((s, h) => s + h.win, 0)
 
-        const profile: PlayerProfileData = {
-          personaname:           player.profile!.personaname,
-          avatarfull:            player.profile!.avatarfull,
-          profileurl:            player.profile!.profileurl,
-          rankTier:              player.rank_tier,
-          countryCode:           player.profile!.loccountrycode,
-          totalGames,
-          totalWins,
-          mostPlayedHeroId:      mostPlayed?.hero_id ?? null,
-          mostPlayedHeroGames:   mostPlayed?.games ?? 0,
-          mostPlayedHeroWinRate: mostPlayed ? mostPlayed.win / mostPlayed.games : 0,
-          bestHeroId:            bestHero?.hero_id ?? null,
-          bestHeroWinRate:       bestHero ? bestHero.win / bestHero.games : 0,
-          bestHeroGames:         bestHero?.games ?? 0,
-          lastMatch:             recentMatches[0] ?? null,
-        }
-        saveProfileCache(accountId, profile)
-        setData(profile)
-      })
-      .finally(() => {
-        clearTimeout(timer)
-        setLoading(false)
-      })
+      const profile: PlayerProfileData = {
+        personaname:           player.profile.personaname,
+        avatarfull:            player.profile.avatarfull,
+        profileurl:            player.profile.profileurl,
+        rankTier:              player.rank_tier,
+        countryCode:           player.profile.loccountrycode,
+        totalGames,
+        totalWins,
+        mostPlayedHeroId:      mostPlayed?.hero_id ?? null,
+        mostPlayedHeroGames:   mostPlayed?.games ?? 0,
+        mostPlayedHeroWinRate: mostPlayed ? mostPlayed.win / mostPlayed.games : 0,
+        bestHeroId:            bestHero?.hero_id ?? null,
+        bestHeroWinRate:       bestHero ? bestHero.win / bestHero.games : 0,
+        bestHeroGames:         bestHero?.games ?? 0,
+        lastMatch:             recentMatches[0] ?? null,
+      }
+      saveProfileCache(accountId, profile)
+      setData(profile)
+    }).finally(() => {
+      if (!cancelled) setLoading(false)
+    })
 
-    return () => {
-      controller.abort()
-      clearTimeout(timer)
-    }
+    return () => { cancelled = true }
   }, [accountId])
 
   return { data, loading }
