@@ -41,3 +41,7 @@ coverage/
 # Vite
 .vite/
 **/.vite/
+
+# Playwright
+playwright-report/
+test-results/
