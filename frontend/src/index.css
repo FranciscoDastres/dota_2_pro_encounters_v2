@@ -2,21 +2,30 @@
 
 @theme {
   /* ── Palette ─────────────────────────────────────── */
-  --color-dota-dark:       #0e0e0e;
-  --color-dota-darker:     #080808;
-  --color-dota-surface:    #1a1a1a;
-  --color-dota-border:     #2a2a2a;
+  --color-dota-dark:       #080c14;
+  --color-dota-darker:     #040608;
+  --color-dota-surface:    #0f1623;
+  --color-dota-border:     #1e2d45;
   --color-dota-red:        #c23b22;
   --color-dota-red-dark:   #8b1a0a;
-  --color-dota-gold:       #c89b3c;
-  --color-dota-gold-light: #f0c060;
-  --color-dota-gold-dark:  #8b6914;
-  --color-dota-radiant:    #3ec43e;
-  --color-dota-dire:       #c43e3e;
+  --color-dota-gold:       #00c2ff;
+  --color-dota-gold-light: #40d4ff;
+  --color-dota-gold-dark:  #0088cc;
+  --color-dota-radiant:    #00e5a0;
+  --color-dota-dire:       #ff4757;
+
+  /* ── Typography ──────────────────────────────────── */
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
 
   /* ── Animations ──────────────────────────────────── */
   --animate-fade-up:    fade-up 0.45s ease-out both;
   --animate-glow:       glow 4s ease-in-out infinite;
+  --animate-slide-down: slide-down 0.3s ease-out both;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
 }
 
 @keyframes fade-up {
@@ -33,4 +42,9 @@
 @keyframes glow {
   0%, 100% { opacity: 0.35; }
   50%       { opacity: 0.65; }
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
 }
