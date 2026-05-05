@@ -50,7 +50,7 @@ export interface PlayerProfileData {
 }
 
 const OPENDOTA = 'https://api.opendota.com/api'
-const CACHE_PREFIX = 'dota2_profile_v1_'
+const CACHE_PREFIX = 'dota2_profile_v2_'
 const CACHE_TTL = 30 * 60 * 1000 // 30 min
 
 function loadProfileCache(accountId: number): PlayerProfileData | null {
@@ -104,9 +104,17 @@ export function usePlayerProfile(accountId: number | null) {
       const heroStats: HeroStat[] = heroRes.status === 'fulfilled' ? heroRes.value : []
       const recentMatches: RecentMatch[] = recentRes.status === 'fulfilled' ? recentRes.value : []
 
-      const topHeroes: TopHero[] = heroStats
-        .filter(h => h.games >= 10)
-        .sort((a, b) => b.games - a.games)
+      const eligible = heroStats.filter(h => h.games >= 20)
+      const topHeroes: TopHero[] = eligible
+        .sort((a, b) => {
+          const gamesDiff = b.games - a.games
+          if (gamesDiff !== 0) return gamesDiff
+
+          const winRateDiff = (b.win / b.games) - (a.win / a.games)
+          if (winRateDiff !== 0) return winRateDiff
+
+          return b.win - a.win
+        })
         .slice(0, 3)
         .map(h => ({ heroId: h.hero_id, games: h.games, wins: h.win, winRate: h.win / h.games }))
 
