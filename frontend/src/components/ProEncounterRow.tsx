@@ -19,7 +19,7 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
   return (
     <>
       <tr
-        className="group animate-fade-up border-b border-dota-border transition-colors hover:bg-dota-surface/60"
+        className="group animate-fade-up border-b border-l-2 border-dota-border border-l-transparent transition-colors hover:border-l-dota-gold/50 hover:bg-dota-surface/80"
         style={{ animationDelay: `${index * 55}ms` }}
       >
         {/* Avatar */}
@@ -71,8 +71,8 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
           </div>
         </td>
 
-        {/* Last match */}
-        <td className="whitespace-nowrap px-4 py-3 text-gray-400">
+        {/* Last match — hidden on mobile */}
+        <td className="hidden whitespace-nowrap px-4 py-3 text-gray-400 sm:table-cell">
           {formatDate(pro.last_match_time)}
         </td>
 
@@ -85,39 +85,30 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
         {/* Losses */}
         <td className="px-4 py-3 text-center font-mono text-dota-dire">{pro.games - pro.win}</td>
 
-        {/* Win% with mini bar + ally/enemy breakdown */}
+        {/* Win% with bar + ally/enemy pills */}
         <td className="px-4 py-3">
           <div className="flex flex-col items-center gap-1">
-            <span
-              className={`text-sm font-mono ${
-                isWinning ? 'text-dota-radiant' : 'text-dota-dire'
-              }`}
-            >
+            <span className={`flex items-center gap-1 text-sm font-mono ${isWinning ? 'text-dota-radiant' : 'text-dota-dire'}`}>
+              <span className={`inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full ${isWinning ? 'bg-dota-radiant' : 'bg-dota-dire'}`} />
               {winRate}
             </span>
             {pro.games > 0 && (
-              <div className="h-1 w-12 overflow-hidden rounded-full bg-dota-border">
+              <div className="h-1 w-20 overflow-hidden rounded-full bg-dota-border">
                 <div
-                  className={`h-full rounded-full transition-all ${
-                    isWinning ? 'bg-dota-radiant' : 'bg-dota-dire'
-                  }`}
+                  className={`h-full rounded-full transition-all ${isWinning ? 'bg-dota-radiant' : 'bg-dota-dire'}`}
                   style={{ width: `${winPct}%` }}
                 />
               </div>
             )}
-            {/* Ally / Enemy win rate breakdown */}
-            {((pro.with_games ?? 0) > 0 || (pro.against_games ?? 0) > 0) && (
-              <div className="flex gap-1.5 text-[10px] font-mono">
+            {!expanded && ((pro.with_games ?? 0) > 0 || (pro.against_games ?? 0) > 0) && (
+              <div className="mt-0.5 flex flex-wrap justify-center gap-1">
                 {(pro.with_games ?? 0) > 0 && (
-                  <span className="text-dota-radiant/70">
-                    W/{Math.round(((pro.with_win ?? 0) / pro.with_games!) * 100)}%
+                  <span className="rounded border border-dota-radiant/70 bg-dota-radiant/10 px-1.5 py-0.5 text-[10px] text-dota-radiant/80">
+                    with {Math.round(((pro.with_win ?? 0) / pro.with_games!) * 100)}%
                   </span>
                 )}
-                {(pro.with_games ?? 0) > 0 && (pro.against_games ?? 0) > 0 && (
-                  <span className="text-gray-700">·</span>
-                )}
                 {(pro.against_games ?? 0) > 0 && (
-                  <span className="text-dota-dire/70">
+                  <span className="rounded border border-dota-dire/70 bg-dota-dire/10 px-1.5 py-0.5 text-[10px] text-dota-dire/80">
                     vs {Math.round(((pro.against_win ?? 0) / pro.against_games!) * 100)}%
                   </span>
                 )}
@@ -126,9 +117,9 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
           </div>
         </td>
 
-        {/* Country */}
+        {/* Country — hidden on mobile */}
         <td
-          className="px-4 py-3 text-center text-lg"
+          className="hidden px-4 py-3 text-center text-lg sm:table-cell"
           title={pro.country_code ?? undefined}
         >
           {countryCodeToFlag(pro.country_code)}
@@ -154,10 +145,7 @@ export function ProEncounterRow({ pro, index, accountId }: Props) {
       {/* Expanded match history */}
       {expanded && (
         <tr className="border-b border-dota-border/50">
-          <td
-            colSpan={10}
-            className="bg-dota-darker/60 px-6 py-4"
-          >
+          <td colSpan={10} className="bg-dota-darker/60 px-6 py-4">
             <MatchHistory accountId={accountId} proAccountId={pro.account_id} />
           </td>
         </tr>
