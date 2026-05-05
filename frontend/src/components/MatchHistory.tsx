@@ -75,12 +75,23 @@ export function MatchHistory({ accountId, proAccountId }: Props) {
 
       {/* Content */}
       {status === 'loading' || status === 'idle' ? (
-        <div className="flex flex-col items-center justify-center gap-1.5 py-4">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-dota-border border-t-dota-gold" />
-            Loading matches…
+        <div>
+          <p className="mb-2 text-[11px] text-gray-700">OpenDota can take up to 15s on first load…</p>
+          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex h-[72px] animate-pulse items-center gap-2 rounded-lg border border-dota-border/40 bg-dota-border/20 px-3 py-2">
+                <div className="h-8 w-8 flex-shrink-0 rounded bg-dota-border/40" />
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <div className="h-2.5 w-3/4 rounded bg-dota-border/40" />
+                  <div className="h-2 w-1/2 rounded bg-dota-border/30" />
+                </div>
+                <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
+                  <div className="h-2.5 w-8 rounded bg-dota-border/40" />
+                  <div className="h-2 w-12 rounded bg-dota-border/30" />
+                </div>
+              </div>
+            ))}
           </div>
-          <span className="text-[11px] text-gray-700">OpenDota can take up to 15s on first load</span>
         </div>
       ) : status === 'error' ? (
         <p className="py-3 text-center text-sm text-dota-red/80">{error}</p>
