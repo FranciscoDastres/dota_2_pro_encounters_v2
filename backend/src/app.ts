@@ -33,15 +33,59 @@ app.use(
 )
 app.use(morgan(env.isDevelopment ? 'dev' : 'combined', { stream: morganStream }))
 
-const allowedOrigins = env.isDevelopment
-  ? [env.FRONTEND_URL, 'http://localhost:5173', 'http://127.0.0.1:5173']
-  : [env.FRONTEND_URL]
+const allowedOrigins = new Set([
+  env.FRONTEND_URL,
+  ...(env.isDevelopment ? ['http://localhost:5173', 'http://127.0.0.1:5173'] : []),
+])
+
+const isPrivateIpv4 = (hostname: string) => {
+  const parts = hostname.split('.').map(Number)
+
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) {
+    return false
+  }
+
+  const [first, second] = parts
+
+  return (
+    first === 10 ||
+    first === 127 ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 169 && second === 254) ||
+    (first === 0 && second === 0)
+  )
+}
+
+export const isAllowedCorsOrigin = (
+  origin: string | undefined,
+  allowLocalDevelopmentOrigins = env.isDevelopment,
+) => {
+  if (!origin || allowedOrigins.has(origin)) {
+    return true
+  }
+
+  if (!allowLocalDevelopmentOrigins) {
+    return false
+  }
+
+  try {
+    const url = new URL(origin)
+    const isHttp = url.protocol === 'http:' || url.protocol === 'https:'
+    const isLocalHostname =
+      url.hostname === 'localhost' || url.hostname === '::1' || isPrivateIpv4(url.hostname)
+
+    return isHttp && isLocalHostname
+  } catch {
+    return false
+  }
+}
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow server-to-server calls (no Origin header) and listed origins
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow server-to-server calls (no Origin header), configured origins, and local dev hosts.
+      if (isAllowedCorsOrigin(origin)) {
         callback(null, true)
       } else {
         callback(new Error('Not allowed by CORS'))
