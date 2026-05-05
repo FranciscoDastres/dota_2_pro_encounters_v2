@@ -7,6 +7,7 @@ interface Props {
   accountId: number
 }
 
+const STEAM_CDN = 'https://cdn.cloudflare.steamstatic.com'
 const RANK_NAMES = ['', 'Herald', 'Guardian', 'Crusader', 'Archon', 'Legend', 'Ancient', 'Divine', 'Immortal']
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V']
 
@@ -32,6 +33,16 @@ function isWin(slot: number, radiantWin: boolean): boolean {
   return slot < 128 ? radiantWin : !radiantWin
 }
 
+function heroCoverUrl(heroName: string | undefined | null): string {
+  const short = (heroName ?? '').replace('npc_dota_hero_', '')
+  return `${STEAM_CDN}/apps/dota2/images/dota_react/heroes/${short}.png`
+}
+
+function legacyHeroCoverUrl(heroName: string | undefined | null): string {
+  const short = (heroName ?? '').replace('npc_dota_hero_', '')
+  return `${STEAM_CDN}/apps/dota2/images/heroes/${short}_full.png`
+}
+
 function HeroIcon({ heroId, heroMap, size = 8 }: { heroId: number | null; heroMap: ReturnType<typeof useHeroes>; size?: number }) {
   const hero = heroId ? heroMap[heroId] : null
   const cls = `h-${size} w-${size} flex-shrink-0 rounded`
@@ -53,11 +64,15 @@ export function PlayerProfile({ accountId }: Props) {
 
   if (loading) {
     return (
-      <div className="mb-6 flex items-center gap-3 rounded-xl border border-dota-border bg-dota-surface px-5 py-4">
-        <div className="h-14 w-14 flex-shrink-0 animate-pulse rounded-full bg-dota-border/40" />
-        <div className="flex flex-col gap-2">
-          <div className="h-4 w-36 animate-pulse rounded bg-dota-border/40" />
-          <div className="h-3 w-24 animate-pulse rounded bg-dota-border/30" />
+      <div className="mb-6 overflow-hidden rounded-xl border border-dota-border">
+        <div className="flex h-48 animate-pulse items-end bg-dota-surface px-5 pb-5">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 flex-shrink-0 animate-pulse rounded-full bg-dota-border/40" />
+            <div className="flex flex-col gap-2">
+              <div className="h-5 w-40 animate-pulse rounded bg-dota-border/40" />
+              <div className="h-3 w-28 animate-pulse rounded bg-dota-border/30" />
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -74,74 +89,137 @@ export function PlayerProfile({ accountId }: Props) {
   const lastMatchWon = lastMatch ? isWin(lastMatch.player_slot, lastMatch.radiant_win) : undefined
   const lastMatchHero = lastMatch ? heroMap[lastMatch.hero_id] : null
 
+  const splashHeroes = data.topHeroes
+    .slice(0, 3)
+    .map(th => heroMap[th.heroId])
+    .filter(Boolean)
+
   return (
-    <div className="mb-6 rounded-xl border border-dota-border bg-dota-surface">
+    <div className="mb-6 overflow-hidden rounded-xl border border-dota-border">
 
-      {/* Top: avatar + identity */}
-      <div className="flex flex-wrap items-center gap-4 px-5 py-4">
-        <a href={data.profileurl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-          <img
-            src={data.avatarfull}
-            alt={data.personaname}
-            className="h-14 w-14 rounded-full ring-2 ring-dota-border transition-all hover:ring-dota-gold/50"
-          />
-        </a>
+      {/* ── Hero Splash ───────────────────────────────── */}
+      <div className="relative flex min-h-[220px] items-end overflow-hidden bg-dota-darker">
 
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <a
-              href={data.profileurl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-lg font-bold text-white hover:text-dota-gold-light transition-colors truncate"
-            >
-              {data.personaname}
-            </a>
-            {data.countryCode && (
-              <span className="text-base" title={data.countryCode}>
-                {countryCodeToFlag(data.countryCode)}
-              </span>
-            )}
+        {/* 3 hero cover images */}
+        {splashHeroes.length > 0 && (
+          <div className="absolute inset-0 flex">
+            {splashHeroes.map((hero, i) => (
+              <div key={hero!.id} className="relative flex-1 overflow-hidden">
+                <img
+                  src={heroCoverUrl(hero!.name)}
+                  alt={hero!.localized_name}
+                  className="h-full w-full scale-110 object-cover object-center opacity-90 saturate-125"
+                  onError={e => {
+                    const image = e.currentTarget as HTMLImageElement
+                    if (image.dataset.fallback === 'true') {
+                      image.style.opacity = '0'
+                      return
+                    }
+
+                    image.dataset.fallback = 'true'
+                    image.src = legacyHeroCoverUrl(hero!.name)
+                  }}
+                />
+                {/* separator between heroes */}
+                {i < splashHeroes.length - 1 && (
+                  <div className="absolute right-0 top-0 h-full w-px bg-dota-border/60" />
+                )}
+              </div>
+            ))}
           </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-3">
-            {rank && (
-              <span className="rounded-full border border-dota-gold/30 bg-dota-gold/10 px-2 py-0.5 text-[11px] font-medium text-dota-gold">
-                {rank}
-              </span>
-            )}
-            {overallWR !== null && (
-              <span className="text-xs text-gray-500">
-                <span className="font-mono text-white">{overallWR}%</span>
-                {' WR · '}
-                <span className="font-mono text-white">{data.totalGames.toLocaleString()}</span>
-                {' games'}
-              </span>
-            )}
+        )}
+
+        {/* gradient overlays: sides + bottom */}
+        <div className="pointer-events-none absolute inset-0"
+          style={{
+            background: 'linear-gradient(to right, rgba(4,6,8,0.95) 0%, rgba(4,6,8,0.3) 25%, rgba(4,6,8,0.18) 75%, rgba(4,6,8,0.85) 100%), linear-gradient(to top, #0f1623 0%, rgba(8,12,20,0.42) 46%, rgba(8,12,20,0.06) 100%)'
+          }}
+        />
+
+        {/* player identity — bottom left */}
+        <div className="relative z-10 flex w-full flex-wrap items-center gap-4 px-5 pb-5">
+          <a href={data.profileurl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+            <img
+              src={data.avatarfull}
+              alt={data.personaname}
+              className="h-16 w-16 rounded-full ring-2 ring-dota-border transition-all hover:ring-dota-gold/60"
+            />
+          </a>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href={data.profileurl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="truncate font-display text-xl font-bold text-white transition-colors hover:text-dota-gold-light"
+                style={{ fontFamily: "'Syne', sans-serif" }}
+              >
+                {data.personaname}
+              </a>
+              {data.countryCode && (
+                <span className="text-base" title={data.countryCode}>
+                  {countryCodeToFlag(data.countryCode)}
+                </span>
+              )}
+            </div>
+
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              {rank && (
+                <span className="rounded-full border border-dota-gold/30 bg-dota-gold/10 px-2 py-0.5 text-[11px] font-medium text-dota-gold">
+                  {rank}
+                </span>
+              )}
+              {overallWR !== null && (
+                <span className="text-xs text-gray-400">
+                  <span className="font-mono text-white">{overallWR}%</span>
+                  {' Win Rate · '}
+                  <span className="font-mono text-white">{data.totalGames.toLocaleString()}</span>
+                  {' games'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
+        {/* end player identity */}
       </div>
+      {/* ── end Hero Splash ──────────────────────────── */}
 
       <div className="h-px bg-dota-border/60" />
 
-      {/* Bottom: top heroes + last match */}
-      <div className="grid grid-cols-1 gap-0 sm:grid-cols-2">
+      {/* ── Bottom: top heroes + last match ───────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2">
 
-        {/* Top 3 heroes by win rate */}
-        <div className="px-5 py-4">
-          <p className="mb-3 text-[10px] uppercase tracking-wider text-gray-600">Most Played</p>
+        {/* Top 3 heroes */}
+        <div className="px-5 py-5">
+          <p className="mb-3 text-xs uppercase tracking-wider text-gray-500">Most Played</p>
           {data.topHeroes.length === 0 ? (
-            <p className="text-xs text-gray-700">Not enough data (min. 10 games per hero)</p>
+            <div className="rounded-lg bg-dota-border/20 px-4 py-3">
+              <p className="text-xs italic text-gray-600">Not enough data (min. 20 games per hero)</p>
+            </div>
           ) : (
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-3">
               {data.topHeroes.map((th: TopHero, i) => {
                 const hero = heroMap[th.heroId]
+                const winPct = Math.round(th.winRate * 100)
+                const lossPct = 100 - winPct
                 return (
                   <div key={th.heroId} className="flex items-center gap-3">
-                    <span className="w-4 text-[11px] font-mono text-gray-700 flex-shrink-0">{i + 1}</span>
+                    <span className="w-4 flex-shrink-0 font-mono text-[11px] text-gray-600">{i + 1}</span>
                     <HeroIcon heroId={th.heroId} heroMap={heroMap} size={8} />
-                    <span className="flex-1 truncate text-sm text-white">{hero?.localized_name ?? '—'}</span>
-                    <span className="text-xs font-mono text-dota-radiant">{Math.round(th.winRate * 100)}%</span>
-                    <span className="text-[11px] text-gray-600">{th.games}g</span>
+                    <div className="flex flex-1 min-w-0 flex-col gap-1">
+                      <span className="truncate text-sm font-medium text-white">{hero?.localized_name ?? '—'}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="h-1 w-16 overflow-hidden rounded-full bg-dota-border">
+                          <div className="flex h-full">
+                            <div className="bg-dota-radiant" style={{ width: `${winPct}%` }} />
+                            <div className="bg-dota-dire" style={{ width: `${lossPct}%` }} />
+                          </div>
+                        </div>
+                        <span className="text-[11px] text-gray-500">{th.games} games</span>
+                      </div>
+                    </div>
+                    <span className="flex-shrink-0 text-xs font-mono text-dota-gold">{winPct}% Win Rate</span>
                   </div>
                 )
               })}
@@ -149,40 +227,39 @@ export function PlayerProfile({ accountId }: Props) {
           )}
         </div>
 
-        {/* Divider vertical on sm+ */}
-        <div className="hidden sm:block absolute" />
-
         {/* Last match */}
-        <div className="border-t border-dota-border/60 px-5 py-4 sm:border-t-0 sm:border-l">
-          <p className="mb-3 text-[10px] uppercase tracking-wider text-gray-600">Last Match</p>
+        <div className="border-t border-dota-border/60 px-5 py-5 sm:border-t-0 sm:border-l">
+          <p className="mb-3 text-xs uppercase tracking-wider text-gray-500">Last Match</p>
           {lastMatch ? (
             <a
               href={`https://www.opendota.com/matches/${lastMatch.match_id}`}
               target="_blank"
               rel="noopener noreferrer"
+              title="View on OpenDota"
               className={[
-                'flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-all hover:scale-[1.01]',
+                'group relative flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-all hover:scale-[1.01]',
                 lastMatchWon
                   ? 'border-dota-radiant/25 bg-dota-radiant/5 hover:border-dota-radiant/50'
                   : 'border-dota-dire/25 bg-dota-dire/5 hover:border-dota-dire/50',
               ].join(' ')}
             >
+              <span className="absolute right-2 top-2 text-[10px] text-gray-600 transition-colors group-hover:text-dota-gold">↗</span>
               <HeroIcon heroId={lastMatch.hero_id} heroMap={heroMap} size={10} />
-              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                <span className="text-sm font-semibold text-white truncate">
+              <div className="flex flex-1 min-w-0 flex-col gap-0.5">
+                <span className="truncate text-sm font-semibold text-white">
                   {lastMatchHero?.localized_name ?? '—'}
                 </span>
-                <span className="font-mono text-[11px] text-gray-500">
-                  #{lastMatch.match_id}
-                </span>
+                <span className="font-mono text-[11px] text-gray-500">#{lastMatch.match_id}</span>
                 <span className="text-[11px] text-gray-600">{timeAgo(lastMatch.start_time)}</span>
               </div>
-              <span className={`text-sm font-bold flex-shrink-0 ${lastMatchWon ? 'text-dota-radiant' : 'text-dota-dire'}`}>
+              <span className={`flex-shrink-0 text-sm font-bold ${lastMatchWon ? 'text-dota-radiant' : 'text-dota-dire'}`}>
                 {lastMatchWon ? 'WIN' : 'LOSS'}
               </span>
             </a>
           ) : (
-            <p className="text-xs text-gray-700">No recent matches found</p>
+            <div className="rounded-lg bg-dota-border/20 px-4 py-3">
+              <p className="text-xs italic text-gray-600">No recent matches found</p>
+            </div>
           )}
         </div>
 
