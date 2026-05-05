@@ -1,9 +1,8 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useProEncounters } from './hooks/useProEncounters'
 import { useOnlineStatus } from './hooks/useOnlineStatus'
 import { useSearchHistory } from './hooks/useSearchHistory'
 import { SearchForm } from './components/SearchForm'
-import { LoadingSpinner } from './components/LoadingSpinner'
 import { ErrorMessage } from './components/ErrorMessage'
 import { EmptyState } from './components/EmptyState'
 import { ProEncounterTable } from './components/ProEncounterTable'
@@ -18,6 +17,9 @@ function App() {
   const isOnline = useOnlineStatus()
   const { history, add: addToHistory, remove: removeFromHistory } = useSearchHistory()
   const initialAccountId = new URLSearchParams(window.location.search).get('account') ?? ''
+  const [activeAccountId, setActiveAccountId] = useState<number | null>(
+    initialAccountId ? Number(initialAccountId) : null
+  )
 
   useEffect(() => {
     if (initialAccountId) addToHistory(initialAccountId)
@@ -26,6 +28,7 @@ function App() {
 
   const handleSearch = useCallback((accountId: string) => {
     addToHistory(accountId)
+    setActiveAccountId(Number(accountId))
     search(accountId)
   }, [addToHistory, search])
 
@@ -47,7 +50,7 @@ function App() {
             OpenDota API
           </p>
 
-          <h1 className="mb-5 text-5xl font-bold leading-tight md:text-6xl">
+          <h1 className="mb-5 text-5xl font-bold leading-tight md:text-6xl" style={{ fontFamily: "'Syne', sans-serif" }}>
             <span className="bg-gradient-to-r from-dota-gold to-dota-gold-light bg-clip-text text-transparent">
               Stomp
             </span>
@@ -92,21 +95,21 @@ function App() {
                 {history.map(id => (
                   <div
                     key={id}
-                    className="flex items-center gap-1 rounded-full border border-dota-border px-2.5 py-0.5 text-xs transition-all hover:border-dota-gold/40"
+                    className="flex min-h-[32px] min-w-[64px] items-center gap-1.5 rounded-full border border-dota-border px-2.5 py-0.5 text-xs transition-all hover:border-dota-gold/40"
                   >
                     <button
                       onClick={() => handleSearch(id)}
                       disabled={status === 'loading'}
-                      className="font-mono text-gray-500 hover:text-dota-gold transition-colors disabled:pointer-events-none disabled:opacity-40"
+                      className="flex-1 font-mono text-gray-500 transition-colors hover:text-dota-gold disabled:pointer-events-none disabled:opacity-40"
                     >
                       {id}
                     </button>
                     <button
                       onClick={() => removeFromHistory(id)}
                       aria-label={`Remove ${id} from history`}
-                      className="text-gray-700 hover:text-red-400 transition-colors leading-none"
+                      className="flex-shrink-0 text-xs leading-none text-gray-600 transition-colors hover:text-gray-300"
                     >
-                      ×
+                      ✕
                     </button>
                   </div>
                 ))}
@@ -118,7 +121,12 @@ function App() {
 
       {/* ── Results ──────────────────────────────────────── */}
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-12">
-        {status === 'loading' && <LoadingSpinner />}
+        {status === 'loading' && (
+          <div>
+            {activeAccountId != null && <PlayerProfile accountId={activeAccountId} />}
+            <ProEncounterTable loading={true} />
+          </div>
+        )}
 
         {status === 'error' && error && (
           <ErrorMessage message={error} onRetry={reset} />
