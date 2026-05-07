@@ -27,7 +27,7 @@ vi.mock('../config/env', () => ({
 }))
 
 // Import after mocks so the module picks up the mocked dependencies
-const { getPlayerProsWithCache } = await import('../services/cache.service')
+const { clearPlayerProsMemoryCache, getPlayerProsWithCache } = await import('../services/cache.service')
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -50,6 +50,7 @@ const mockPros: OpenDotaProEncounter[] = [
 describe('cache.service — getPlayerProsWithCache', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    clearPlayerProsMemoryCache()
 
     // Re-wire the Supabase chainable mock after resetAllMocks clears implementations
     mockSingle.mockResolvedValue({ data: null, error: null })
