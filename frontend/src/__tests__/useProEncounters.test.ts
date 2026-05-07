@@ -13,6 +13,7 @@ const mockResponse: ProEncountersResponse = {
 describe('useProEncounters', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    window.history.replaceState(null, '', '/')
   })
 
   it('starts in idle state', () => {
