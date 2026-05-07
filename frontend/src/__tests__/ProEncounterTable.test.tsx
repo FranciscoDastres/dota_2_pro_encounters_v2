@@ -7,6 +7,7 @@ const mockData: ProEncountersResponse = {
   pros: [
     {
       account_id: 87278757,
+      name: 'Miracle-',
       avatarfull: 'https://example.com/avatar.jpg',
       profileurl: 'https://steamcommunity.com/id/Miracle-/',
       personaname: 'Miracle-',
@@ -18,6 +19,7 @@ const mockData: ProEncountersResponse = {
     },
     {
       account_id: 111620041,
+      name: 'Puppey',
       avatarfull: 'https://example.com/avatar2.jpg',
       profileurl: 'https://steamcommunity.com/id/Puppey/',
       personaname: 'Puppey',
@@ -45,13 +47,13 @@ describe('ProEncounterTable', () => {
 
   it('renders all pro player names', () => {
     render(<ProEncounterTable data={mockData} />)
-    expect(screen.getByRole('link', { name: 'Miracle-' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Puppey' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Miracle-/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Puppey/ })).toBeInTheDocument()
   })
 
   it('renders profile links with correct href and target', () => {
     render(<ProEncounterTable data={mockData} />)
-    const link = screen.getByRole('link', { name: 'Miracle-' })
+    const link = screen.getByRole('link', { name: /Miracle-/ })
     expect(link).toHaveAttribute('href', 'https://steamcommunity.com/id/Miracle-/')
     expect(link).toHaveAttribute('target', '_blank')
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
@@ -70,7 +72,7 @@ describe('ProEncounterTable', () => {
     expect(screen.getByText('Games')).toBeInTheDocument()
     expect(screen.getByText('W')).toBeInTheDocument()
     expect(screen.getByText('L')).toBeInTheDocument()
-    expect(screen.getByText('Win%')).toBeInTheDocument()
+    expect(screen.getByText('Win Rate')).toBeInTheDocument()
   })
 
   it('renders avatar images with alt text', () => {
