@@ -8,6 +8,10 @@ const CACHE_TTL_MS = 60 * 60 * 1000 // 1 hour
 // In-memory layer to skip Supabase on hot queries within the same process
 const memCache = new Map<number, { pros: OpenDotaProEncounter[]; ts: number }>()
 
+export function clearPlayerProsMemoryCache(): void {
+  memCache.clear()
+}
+
 export async function getPlayerProsWithCache(accountId: number): Promise<OpenDotaProEncounter[]> {
   const mem = memCache.get(accountId)
   if (mem && Date.now() - mem.ts < CACHE_TTL_MS) return mem.pros
