@@ -70,12 +70,12 @@ describe('GET /api/pro-encounters/:accountId', () => {
     expect(res.status).toBe(400)
   })
 
-  it('returns 503 when OpenDota API is unreachable', async () => {
-    const networkErr = Object.assign(new Error('connect ECONNREFUSED'), {
-      isAxiosError: true,
-      response: undefined,
-    })
-    vi.mocked(cacheService.getPlayerProsWithCache).mockRejectedValueOnce(networkErr)
+  // En proEncounters.route.test.ts
+
+  it('returns 503 when the circuit breaker is open', async () => {
+    vi.mocked(cacheService.getPlayerProsWithCache).mockRejectedValueOnce(
+      new Error('OpenDota service temporarily unavailable (circuit open)')
+    )
 
     const res = await request(app).get('/api/pro-encounters/12345678')
 
