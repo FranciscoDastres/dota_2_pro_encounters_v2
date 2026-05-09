@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { ProEncountersResponse, SharedMatchesResponse } from '../types'
+import type { CarryComparisonResponse, ProEncountersResponse, SharedMatchesResponse } from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -43,6 +43,53 @@ const sharedMatchesResponseSchema = z.object({
   account_id: z.number(),
   pro_account_id: z.number(),
   matches: z.array(sharedMatchSchema),
+})
+
+const carryComparisonMetricSchema = z.object({
+  key: z.enum(['gold_per_min', 'xp_per_min', 'last_hits_per_10', 'hero_damage', 'tower_damage']),
+  label: z.string(),
+  userValue: z.number(),
+  proValue: z.number(),
+  difference: z.number(),
+  ratio: z.number(),
+  passed: z.boolean(),
+})
+
+const carryItemTimingComparisonSchema = z.object({
+  itemKey: z.string(),
+  itemName: z.string(),
+  userMinute: z.number().nullable(),
+  proMinute: z.number(),
+  differenceMinutes: z.number().nullable(),
+  status: z.enum(['on_time', 'late', 'missing']),
+})
+
+const carryComparisonResponseSchema = z.object({
+  account_id: z.number(),
+  match_id: z.number(),
+  hero_id: z.number(),
+  benchmark_percentile: z.union([z.literal(95), z.literal(99)]),
+  scenario: z.enum(['stomp', 'comeback']),
+  fulfilled_role: z.boolean(),
+  efficiency_gap: z.object({
+    score: z.number(),
+    gpmRatio: z.number(),
+    lh10Ratio: z.number(),
+    feedback: z.string(),
+  }),
+  metrics: z.array(carryComparisonMetricSchema),
+  item_timings: z.array(carryItemTimingComparisonSchema),
+  raw_user: z.object({
+    gold_per_min: z.number(),
+    xp_per_min: z.number(),
+    last_hits: z.number(),
+    hero_damage: z.number(),
+    tower_damage: z.number(),
+    purchase_log: z.array(z.object({
+      time: z.number(),
+      key: z.string(),
+    })),
+  }),
 })
 
 // ---------- Retry with exponential backoff ----------
@@ -112,4 +159,21 @@ export async function fetchSharedMatches(
 
   const data: unknown = await response.json()
   return sharedMatchesResponseSchema.parse(data)
+}
+
+export async function fetchCarryComparison(
+  accountId: number,
+  percentile: 95 | 99 = 95,
+): Promise<CarryComparisonResponse> {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/api/carry-comparison/${encodeURIComponent(accountId)}?percentile=${percentile}`,
+  )
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as { error?: string }
+    throw new Error(body.error ?? `HTTP Error ${response.status}`)
+  }
+
+  const data: unknown = await response.json()
+  return carryComparisonResponseSchema.parse(data)
 }
