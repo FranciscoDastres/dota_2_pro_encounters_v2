@@ -31,6 +31,13 @@ router.get('/:accountId', validateParams(proEncountersParamsSchema), async (req:
       appErr.status = status === 429 ? 429 : 503
       return next(appErr)
     }
+
+    // Circuit breaker abierto — no es AxiosError, pero sí es un fallo de upstream
+    if (err instanceof Error && err.message.includes('circuit open')) {
+      const appErr = new Error('Could not connect to the OpenDota API.') as AppError
+      appErr.status = 503
+      return next(appErr)
+    }
     next(err)
   }
 })
