@@ -11,7 +11,7 @@ const client = axios.create({
 
 // ─── Retry with exponential backoff ──────────────────────────────────────────
 
-const MAX_RETRIES = 3
+const MAX_RETRIES = 2        // era 3 — con 2 el tiempo máximo baja de ~16s a ~2s
 const RETRY_BASE_MS = 500
 
 function isRetryable(err: unknown): boolean {
@@ -44,18 +44,24 @@ async function withRetry<T>(label: string, fn: () => Promise<T>): Promise<T> {
 
 type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN'
 
-const FAILURE_THRESHOLD = 5   // failures before opening
-const RESET_TIMEOUT_MS = 30_000 // ms before attempting HALF_OPEN
+const FAILURE_THRESHOLD = 3  // era 5 — abre antes para proteger usuarios
+const RESET_TIMEOUT_MS = 30_000
 
 class CircuitBreaker {
   private state: CircuitState = 'CLOSED'
   private failures = 0
   private openedAt = 0
+  private probing = false    // evita múltiples probes simultáneos en HALF_OPEN
 
   async run<T>(label: string, fn: () => Promise<T>): Promise<T> {
     if (this.state === 'OPEN') {
       if (Date.now() - this.openedAt >= RESET_TIMEOUT_MS) {
+        // Solo un request prueba en HALF_OPEN, el resto falla rápido
+        if (this.probing) {
+          throw new Error('OpenDota service temporarily unavailable (circuit open)')
+        }
         this.state = 'HALF_OPEN'
+        this.probing = true
         logger.info(`[CircuitBreaker:${label}] HALF_OPEN — probing`)
       } else {
         throw new Error('OpenDota service temporarily unavailable (circuit open)')
@@ -69,6 +75,10 @@ class CircuitBreaker {
     } catch (err) {
       this.onFailure(label)
       throw err
+    } finally {
+      if (this.state !== 'HALF_OPEN') {
+        this.probing = false
+      }
     }
   }
 
@@ -78,6 +88,7 @@ class CircuitBreaker {
     }
     this.failures = 0
     this.state = 'CLOSED'
+    this.probing = false
   }
 
   private onFailure(label: string): void {
@@ -85,6 +96,7 @@ class CircuitBreaker {
     if (this.failures >= FAILURE_THRESHOLD) {
       this.state = 'OPEN'
       this.openedAt = Date.now()
+      this.probing = false
       logger.error(`[CircuitBreaker:${label}] OPEN after ${this.failures} failures`)
     }
   }
@@ -122,9 +134,9 @@ export async function getSharedMatches(
   filter?: 'with' | 'against',
 ): Promise<SharedMatch[]> {
   const filterParam =
-    filter === 'with'    ? { with_account_id: proAccountId } :
-    filter === 'against' ? { against_account_id: proAccountId } :
-                           { included_account_id: proAccountId }
+    filter === 'with' ? { with_account_id: proAccountId } :
+      filter === 'against' ? { against_account_id: proAccountId } :
+        { included_account_id: proAccountId }
 
   const { data } = await withResilience('getSharedMatches', () =>
     client.get<SharedMatch[]>(`/players/${accountId}/matches`, {
