@@ -4,11 +4,13 @@ import { supabase } from '../services/supabase.service'
 import { env } from '../config/env'
 import proEncountersRouter from './proEncounters.route'
 import proMatchesRouter from './proMatches.route'
+import carryComparisonRouter from './carryComparison.route'
 
 const router = Router()
 
 router.use('/pro-encounters', proEncountersRouter)
 router.use('/pro-matches', proMatchesRouter)
+router.use('/carry-comparison', carryComparisonRouter)
 
 router.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
