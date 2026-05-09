@@ -133,3 +133,40 @@ export async function getSharedMatches(
   )
   return data
 }
+
+/**
+ * Returns the latest public matches for a player.
+ * Endpoint: GET /players/{account_id}/matches
+ */
+export async function getLatestPlayerMatches(accountId: number, limit = 1): Promise<unknown> {
+  const { data } = await withResilience('getLatestPlayerMatches', () =>
+    client.get(`/players/${accountId}/matches`, {
+      params: { limit },
+    }),
+  )
+  return data
+}
+
+/**
+ * Returns parsed match details, including the players array and purchase logs.
+ * Endpoint: GET /matches/{match_id}
+ */
+export async function getMatchDetails(matchId: number): Promise<unknown> {
+  const { data } = await withResilience('getMatchDetails', () =>
+    client.get(`/matches/${matchId}`),
+  )
+  return data
+}
+
+/**
+ * Returns percentile benchmarks for a hero.
+ * Endpoint: GET /benchmarks?hero_id={hero_id}
+ */
+export async function getHeroBenchmarks(heroId: number): Promise<unknown> {
+  const { data } = await withResilience('getHeroBenchmarks', () =>
+    client.get('/benchmarks', {
+      params: { hero_id: heroId },
+    }),
+  )
+  return data
+}
