@@ -20,3 +20,7 @@ export const proMatchesParamsSchema = z.object({
   accountId: accountIdField,
   proAccountId: accountIdField,
 })
+
+export const carryComparisonParamsSchema = z.object({
+  accountId: accountIdField,
+})
